@@ -6,18 +6,14 @@ import "./Governance.sol";
 import "./GovernanceToken.sol";
 import "./Treasury.sol";
 import "./Management.sol";
+import "./Access.sol";
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
-
-contract Dao is AccessControl {
+contract Dao {
     GovernanceToken private _token;
     Governance private _governance;
     Treasury private _treasury;
     Management private _management;
-
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
-    bytes32 public constant EMPLOYEE_ROLE = keccak256("EMPLOYEE_ROLE");
+    Access private _access;
 
     constructor(
         address initialOwner,
@@ -25,12 +21,11 @@ contract Dao is AccessControl {
         string memory tokenName,
         string memory tokenSymbol
     ) {
-        _setRoleAdmin(ADMIN_ROLE, DEFAULT_ADMIN_ROLE);
-        _setupRole(ADMIN_ROLE, initialOwner);
         _token = new GovernanceToken(initialOwner, initialSupply, tokenName, tokenSymbol);
         _governance = new Governance(address(_token));
         _treasury = new Treasury();
         _management = new Management();
+        _access = new Access(initialOwner);
     }
 
     function governanceAddress() public view returns (address) {
@@ -43,5 +38,13 @@ contract Dao is AccessControl {
 
     function treasuryAddress() public view returns (address) {
         return address(_treasury);
+    }
+
+    function managementAddress() public view returns (address) {
+        return address(_management);
+    }
+
+    function accessAddress() public view returns (address) {
+        return address(_access);
     }
 }

@@ -3,10 +3,13 @@
 pragma solidity ^0.8.6;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./Access.sol";
 
 contract Governance {
     IERC20 private _token;
+    Access private _access;
     uint256 public constant INTERVAL = 1 weeks;
+
     enum Choice {
         Yes,
         No
@@ -16,11 +19,12 @@ contract Governance {
         Approved,
         Rejected
     }
+
     struct Proposal {
         uint256 nbYes;
         uint256 nbNo;
         uint256 createdAt;
-        Status statu;
+        Status status;
     }
 
     constructor(address token_) {
