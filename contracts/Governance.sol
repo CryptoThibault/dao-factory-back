@@ -27,8 +27,9 @@ contract Governance {
         Status status;
     }
 
-    constructor(address token_) {
+    constructor(address token_, address access_) {
         _token = IERC20(token_);
+        _access = Access(access_);
     }
 
     mapping(uint256 => Proposal) private _proposals;
