@@ -9,8 +9,8 @@ import "./Treasury.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract Dao is AccessControl {
-    Governance private _governance;
     GovernanceToken private _token;
+    Governance private _governance;
     Treasury private _treasury;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -25,8 +25,8 @@ contract Dao is AccessControl {
     ) {
         _setRoleAdmin(ADMIN_ROLE, DEFAULT_ADMIN_ROLE);
         _setupRole(ADMIN_ROLE, initialOwner);
-        _governance = new Governance();
         _token = new GovernanceToken(initialOwner, initialSupply, tokenName, tokenSymbol);
+        _governance = new Governance(address(_token));
         _treasury = new Treasury();
     }
 
