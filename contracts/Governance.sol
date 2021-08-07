@@ -22,6 +22,7 @@ contract Governance {
 
     struct Proposal {
         string description;
+        address author;
         uint256 nbYes;
         uint256 nbNo;
         uint256 createdAt;
@@ -66,6 +67,7 @@ contract Governance {
         _counter++;
         _proposals[_counter] = Proposal({
             description: description_,
+            author: msg.sender,
             nbYes: 0,
             nbNo: 0,
             createdAt: block.timestamp,
@@ -94,6 +96,9 @@ contract Governance {
 
     function descriptionOf(uint256 id) public view returns (string memory) {
         return _proposals[id].description;
+    }
+    function authorOf(uint256 id) public view returns (address) {
+        return _proposals[id].author;
     }
     function nbYesOf(uint256 id) public view returns (uint256) {
         return _proposals[id].nbYes;
