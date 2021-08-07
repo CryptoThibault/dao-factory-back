@@ -28,20 +28,28 @@ contract Governance {
         Status status;
     }
 
-    constructor(address token_, address access_) {
-        _token = IERC20(token_);
-        _access = Access(access_);
-    }
+    event Locked(address sender, uint256 amount, uint256 timestamp);
+    event Unlocked(address receiver, uint256 amount, uint256 timestamp);
+    event Proposed(address sender, string description, uint256 timestamp);
+    event Voted(address sender, uint256 power, uint256 timestamp);
+    event Approved(uint256 id);
+    event Rejected(uint256 id);
 
     mapping(uint256 => Proposal) private _proposals;
     mapping(address => uint256) private _lockedBalance;
     uint256 private _counter;
     uint256 private _totalLocked;
 
+    constructor(address token_, address access_) {
+        _token = IERC20(token_);
+        _access = Access(access_);
+    }
+
     function lock(uint256 amount) public returns (bool) {
         _token.transferFrom(msg.sender, address(this), amount);
         _lockedBalance[msg.sender] += amount;
         _totalLocked += amount;
+        emit Locked(msg.sender, amount, block.timestamp);
         return true;
     }
 
@@ -50,6 +58,7 @@ contract Governance {
         _lockedBalance[msg.sender] -= amount;
         _totalLocked -= amount;
         _token.transfer(msg.sender, amount);
+        emit Unlocked(msg.sender, amount, block.timestamp);
         return true;
     }
 
@@ -62,6 +71,8 @@ contract Governance {
             createdAt: block.timestamp,
             status: Status.Running
         })
+        emit Proposed(msg.sender, description_, block.timestamp);
+        return true;
     }
 
     function vote(uint256 id, Choice choice) public returns (bool) {
@@ -70,11 +81,14 @@ contract Governance {
         } else if (choice == Choice.No) {
             _proposals[id].nbNo += votingPower(msg.sender);
         }
+        emit Voted(msg.sender, votingPower(msg.sender), block.timestamp)
         if (nbYes(id) >= totalPower() / 2) {
             _proposals[id].status = Status.Approved;
+            emit Approved(id);
         }
         else if (nbNo(id) >= totalPower() / 2) {
             _proposals[id].status = Status.Rejected;
+            emit Rejected(id);
         }
     }
 

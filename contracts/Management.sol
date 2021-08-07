@@ -14,6 +14,10 @@ contract Management {
         uint256 lastPayout;
     }
 
+    event Employed(uint256 id, address account, uint256 salary, uint256 timestamp);
+    event Fired(uint256 id, address account, uint256 timestamp);
+    event Payed(address account, uint256 amount, uint256 time, uint256 timestamp);
+
     mapping(address => uint256) private _employeesId;
     mapping(uint256 => Employee) private _employeesData;
     uint256 private _counter;
@@ -27,12 +31,14 @@ contract Management {
             employedAt: block.timestamp,
             lastPayout: 0
         });
+        emit Employed(_counter, account_, salary_, block.timestamp);
         return true;
     }
 
     function fire(address account) public returns (bool) {
         _employeesData[idOf(account)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
         _employeesId[account] = 0;
+        emit Fire(idOf(account), account, block.timestamp);
         return true;
     }
 
@@ -41,6 +47,7 @@ contract Management {
         uint256 nbPayout = block.timestamp - lastPayoutOf(msg.sender) / INTERVAL;
         uint256 amount = salaryOf(msg.sender) * nbPayout;
         payable(msg.sender).sendValue(amount);
+        emit Payed(msg.sender, amount, nbPayout, block.timestamp);
         return true;
     }
 
