@@ -15,6 +15,8 @@ contract Dao {
     Treasury private _treasury;
     Management private _management;
 
+    uint256 public constant INTERVAL = 1 weeks;
+
     constructor(
         address initialOwner,
         uint256 initialSupply,
@@ -28,12 +30,16 @@ contract Dao {
         _management = new Management();
     }
 
-    function governanceAddress() public view returns (address) {
-        return address(_governance);
-    }
-
     function tokenAddress() public view returns (address) {
         return address(_token);
+    }
+
+    function accessAddress() public view returns (address) {
+        return address(_access);
+    }
+
+    function governanceAddress() public view returns (address) {
+        return address(_governance);
     }
 
     function treasuryAddress() public view returns (address) {
@@ -42,9 +48,5 @@ contract Dao {
 
     function managementAddress() public view returns (address) {
         return address(_management);
-    }
-
-    function accessAddress() public view returns (address) {
-        return address(_access);
     }
 }

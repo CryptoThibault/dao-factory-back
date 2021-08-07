@@ -2,7 +2,10 @@
 
 pragma solidity ^0.8.6;
 
+import "@openzeppelin/contracts/utils/Address.sol";
+
 contract Management {
+    using Address for address payable;
     uint256 public constant INTERVAL = 1 weeks;
     struct Employee {
         address account;
@@ -33,11 +36,24 @@ contract Management {
         return true;
     }
 
+    function payout() public returns (bool) {
+        require(lastPayoutOf(msg.sender) < block.timestamp);
+        uint256 nbPayout = block.timestamp - lastPayoutOf(msg.sender) / INTERVAL;
+        uint256 amount = salaryOf(msg.sender) * nbPayout;
+        payable(msg.sender).sendValue(amount);
+        return true;
+    }
+
     function idOf(address account) public view returns (uint256) {
+        require(_employeesId[account] != 0);
         return _employeesId[account];
     }
 
     function salaryOf(address account) public view returns (uint256) {
         return _employeesData[idOf(account)].salary;
+    }
+
+    function lastPayoutOf(address account) public view returns (uint256) {
+        return _employeesData[idOf(account)].lastPayout;
     }
 }
