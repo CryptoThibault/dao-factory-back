@@ -32,8 +32,8 @@ contract Governance {
     event Unlocked(address receiver, uint256 amount, uint256 timestamp);
     event Proposed(address sender, string description, uint256 timestamp);
     event Voted(address sender, uint256 power, uint256 timestamp);
-    event Approved(uint256 id);
-    event Rejected(uint256 id);
+    event Approved(uint256 id, uint256 nbYes, uint256  timestamp);
+    event Rejected(uint256 id, uint256 nbNo, uint256 timestamp);
 
     mapping(uint256 => Proposal) private _proposals;
     mapping(address => uint256) private _lockedBalance;
@@ -84,18 +84,17 @@ contract Governance {
         emit Voted(msg.sender, votingPower(msg.sender), block.timestamp)
         if (nbYes(id) >= totalPower() / 2) {
             _proposals[id].status = Status.Approved;
-            emit Approved(id);
+            emit Approved(id, nbYes(id), block.timestamp);
         }
         else if (nbNo(id) >= totalPower() / 2) {
             _proposals[id].status = Status.Rejected;
-            emit Rejected(id);
+            emit Rejected(id, nbNo(id), block.timestamp);
         }
     }
 
     function descriptionOf(uint256 id) public view returns (string memory) {
         return _proposals[id].description;
     }
-
     function nbYesOf(uint256 id) public view returns (uint256) {
         return _proposals[id].nbYes;
     }

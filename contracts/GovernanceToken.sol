@@ -13,4 +13,14 @@ contract GovernanceToken is ERC20 {
     ) ERC20(name, symbol) {
         _mint(owner, initialSupply);
     }
+
+    function mint(address to, uint256 amount) public view returns(bool) {
+        _mint(to, amount);
+        return true;
+    }
+    function burn(address from, uint256 amount) public view returns(bool) {
+        require(balanceOf(from) >= amount);
+        _burn(from, amount);
+        return true;
+    }
 }
