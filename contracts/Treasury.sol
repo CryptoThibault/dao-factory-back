@@ -13,9 +13,9 @@ contract Treasury {
         uint256 createdAt;
         bool active;
     }
-    
-    event Created(uint256 id, string name, address receiver, uint256 amount, uint256 timestamp)
-    event Canceled(uint256 id, string name, address receiver, uint256 amount, uint256 timestamp)
+
+    event Created(uint256 id, string name, address receiver, uint256 amount, uint256 timestamp);
+    event Canceled(uint256 id, string name, address receiver, uint256 amount, uint256 timestamp);
     event Received(address sender, uint256 amount, uint256 timestamp);
     event Sended(address receiver, uint256 amount, uint256 timestamp);
 
