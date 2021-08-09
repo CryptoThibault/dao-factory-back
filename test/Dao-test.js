@@ -3,4 +3,12 @@
 const { expect } = require('chai');
 const { ethers } = require('ethers');
 
-describe('Dao', async function () { });
+describe('Dao', async function () {
+  let DaoFactory, daoFactory, dev, alice, bob;
+  beforeEach(async function () {
+    [dev, alice, bob] = await ethers.getSigners();
+    DaoFactory = await ethers.getContractFactory('DaoFactory');
+    daoFactory = await DaoFactory.connect(dev).deploy();
+    await daoFactory.deployed();
+  });
+});
