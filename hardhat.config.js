@@ -7,7 +7,7 @@ const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID;
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY;
 
 module.exports = {
-  solidity: '0.8.6',
+  solidity: '0.8.5',
   networks: {
     ropsten: {
       url: `https://ropsten.infura.io/v3/${INFURA_PROJECT_ID}`,

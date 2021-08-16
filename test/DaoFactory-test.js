@@ -1,19 +1,25 @@
 /* eslint-disable no-unused-vars */
 
 const { expect } = require('chai');
-const { ethers } = require('ethers');
+const { ethers } = require('hardhat');
 
 describe('DaoFactory', async function () {
-  let DaoFactory, daoFactory, dev, alice, bob;
+  let DaoFactory, daoFactory, dev, business1, alice, bob;
+  const NAME = 'Business 1';
+  const URL = 'https://www.business1';
+  const TOKEN_NAME = `${NAME} Token`;
+  const TOKEN_SYMBOL = 'BS1';
+  const ID = 1;
+
   beforeEach(async function () {
     [dev, alice, bob] = await ethers.getSigners();
     DaoFactory = await ethers.getContractFactory('DaoFactory');
     daoFactory = await DaoFactory.connect(dev).deploy();
     await daoFactory.deployed();
-    await daoFactory.connect(alice).create('Business 1', 'https://www.business1',
-      ethers.utils.parseEther('1000000'), 'Business 1 Token', 'BS1');
+    business1 = await daoFactory.connect(alice).create(NAME, URL, TOKEN_NAME, TOKEN_SYMBOL);
   });
-  it('should create a Business after deploying', async function () {
 
+  it('should create a Business with good name', async function () {
+    expect(await daoFactory.nameOf(ID)).to.equal(NAME);
   });
 });

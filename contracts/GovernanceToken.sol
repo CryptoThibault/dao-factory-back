@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.5;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
@@ -17,7 +17,6 @@ contract GovernanceToken is ERC20 {
         return true;
     }
     function burn(address from, uint256 amount) public returns (bool) {
-        require(balanceOf(from) >= amount);
         _burn(from, amount);
         return true;
     }

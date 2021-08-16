@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.5;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "./Governance.sol";
@@ -36,15 +36,12 @@ contract Dao is AccessControl {
     function tokenAddress() public view returns (address) {
         return address(_token);
     }
-
     function governanceAddress() public view returns (address) {
         return address(_governance);
     }
-
     function treasuryAddress() public view returns (address) {
         return address(_treasury);
     }
-
     function managementAddress() public view returns (address) {
         return address(_management);
     }

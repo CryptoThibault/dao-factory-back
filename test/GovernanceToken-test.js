@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 
 const { expect } = require('chai');
-const { ethers } = require('ethers');
+const { ethers } = require('hardhat');
 
 describe('GovernanceToken', async function () {
   let GovernanceToken, governanceToken, dev, alice, bob;

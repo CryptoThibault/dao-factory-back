@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.5;
 
 import "@openzeppelin/contracts/utils/Address.sol";
 
@@ -34,14 +34,12 @@ contract Management {
         emit Employed(_counter, account_, salary_, block.timestamp);
         return true;
     }
-
     function fire(address account) public returns (bool) {
         _employeesData[idOf(account)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
         _employeesId[account] = 0;
         emit Fired(idOf(account), account, block.timestamp);
         return true;
     }
-
     function payout() public returns (bool) {
         require(lastPayoutOf(msg.sender) < block.timestamp);
         uint256 nbPayout = block.timestamp - lastPayoutOf(msg.sender) / INTERVAL;
@@ -50,16 +48,13 @@ contract Management {
         emit Payed(msg.sender, amount, nbPayout, block.timestamp);
         return true;
     }
-
     function idOf(address account) public view returns (uint256) {
         require(_employeesId[account] != 0);
         return _employeesId[account];
     }
-
     function salaryOf(address account) public view returns (uint256) {
         return _employeesData[idOf(account)].salary;
     }
-
     function lastPayoutOf(address account) public view returns (uint256) {
         return _employeesData[idOf(account)].lastPayout;
     }
