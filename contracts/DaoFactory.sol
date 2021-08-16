@@ -21,7 +21,6 @@ contract DaoFactory {
     function create(
         string memory name_,
         string memory url_,
-        uint256 initialSupply,
         string memory tokenName,
         string memory tokenSymbol
     ) public returns (bool) {
@@ -31,9 +30,9 @@ contract DaoFactory {
             url: url_,
             author: msg.sender,
             creation: block.timestamp,
-            dao: new Dao(msg.sender, initialSupply, tokenName, tokenSymbol)
+            dao: new Dao(msg.sender, tokenName, tokenSymbol)
         });
-        emit(_counter, name_, url_, msg.sender, block.timestamp, daoAddressOf(_counter)); 
+        emit Created(_counter, name_, url_, msg.sender, block.timestamp, daoAddressOf(_counter)); 
         return true;
     }
 
@@ -42,7 +41,7 @@ contract DaoFactory {
     }
 
     function urlOf(uint256 id) public view returns (string memory) {
-        return _businessId[id].url);
+        return _businessId[id].url;
     }
 
     function authorOf(uint256 id) public view returns (address) {
@@ -50,7 +49,7 @@ contract DaoFactory {
     }
 
     function creationOf(uint256 id) public view returns (uint256) {
-        return _businessId.createdAt;
+        return _businessId[id].createdAt;
     }
 
     function daoAddressOf(uint256 id) public view returns (address) {

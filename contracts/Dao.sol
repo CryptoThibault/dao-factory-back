@@ -22,14 +22,12 @@ contract Dao is AccessControl {
     bytes32 public constant TREASURIER_ROLE = keccak256("TREASURIER_ROLE");
 
     constructor(
-        address initialOwner,
-        uint256 initialSupply,
+        address admin,
         string memory tokenName,
         string memory tokenSymbol
     ) {
-        _setRoleAdmin(ADMIN_ROLE, DEFAULT_ADMIN_ROLE);
-        _setupRole(ADMIN_ROLE, initialOwner);
-        _token = new GovernanceToken(initialOwner, initialSupply, tokenName, tokenSymbol);
+        _setupRole(DEFAULT_ADMIN_ROLE, admin);
+        _token = new GovernanceToken(tokenName, tokenSymbol);
         _governance = new Governance(address(_token));
         _treasury = new Treasury();
         _management = new Management();

@@ -3,7 +3,6 @@
 pragma solidity ^0.8.6;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./Access.sol";
 
 contract Governance {
     IERC20 private _token;
@@ -39,9 +38,8 @@ contract Governance {
     uint256 private _counter;
     uint256 private _totalLocked;
 
-    constructor(address token_, address access_) {
+    constructor(address token_) {
         _token = IERC20(token_);
-        _access = Access(access_);
     }
 
     function lock(uint256 amount) public returns (bool) {
@@ -70,7 +68,7 @@ contract Governance {
             nbNo: 0,
             createdAt: block.timestamp,
             status: Status.Running
-        })
+        });
         emit Proposed(msg.sender, description_, block.timestamp);
         return true;
     }
@@ -81,15 +79,16 @@ contract Governance {
         } else if (choice == Choice.No) {
             _proposals[id].nbNo += votingPower(msg.sender);
         }
-        emit Voted(msg.sender, votingPower(msg.sender), block.timestamp)
-        if (nbYes(id) >= totalPower() / 2) {
+        emit Voted(msg.sender, votingPower(msg.sender), block.timestamp);
+        if (nbYesOf(id) >= totalPower() / 2) {
             _proposals[id].status = Status.Approved;
-            emit Approved(id, nbYes(id), block.timestamp);
+            emit Approved(id, nbYesOf(id), block.timestamp);
         }
-        else if (nbNo(id) >= totalPower() / 2) {
+        else if (nbNoOf(id) >= totalPower() / 2) {
             _proposals[id].status = Status.Rejected;
-            emit Rejected(id, nbNo(id), block.timestamp);
+            emit Rejected(id, nbNoOf(id), block.timestamp);
         }
+        return true;
     }
 
     function descriptionOf(uint256 id) public view returns (string memory) {
@@ -104,9 +103,7 @@ contract Governance {
     function nbNoOf(uint256 id) public view returns (uint256) {
         return _proposals[id].nbNo;
     }
-    function nbNoOf(uint256 id) public view returns (uint256) {
-        return _proposals[id].nbNo;
-    }
+   
     function creationOf(uint256 id) public view returns (uint256) {
         return _proposals[id].createdAt;
     }
