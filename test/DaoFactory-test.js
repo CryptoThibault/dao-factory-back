@@ -4,7 +4,7 @@ const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
 describe('DaoFactory', async function () {
-  let DaoFactory, daoFactory, dev, business1, alice, bob;
+  let DaoFactory, daoFactory, dev, alice, bob;
   const NAME = 'Business 1';
   const URL = 'https://www.business1';
   const TOKEN_NAME = `${NAME} Token`;
@@ -16,10 +16,22 @@ describe('DaoFactory', async function () {
     DaoFactory = await ethers.getContractFactory('DaoFactory');
     daoFactory = await DaoFactory.connect(dev).deploy();
     await daoFactory.deployed();
-    business1 = await daoFactory.connect(alice).create(NAME, URL, TOKEN_NAME, TOKEN_SYMBOL);
+    await daoFactory.connect(alice).create(NAME, URL, TOKEN_NAME, TOKEN_SYMBOL);
   });
 
   it('should create a Business with good name', async function () {
     expect(await daoFactory.nameOf(ID)).to.equal(NAME);
+  });
+  it('should create a Business with good url', async function () {
+    expect(await daoFactory.urlOf(ID)).to.equal(URL);
+  });
+  it('should create a Business with good author', async function () {
+    expect(await daoFactory.authorOf(ID)).to.equal(alice.address);
+  });
+  it('should create a Business with good creation date', async function () {
+    expect(await daoFactory.creationOf(ID)).to.above(0);
+  });
+  it('should create a Business with a new Dao contract address', async function () {
+    expect(await daoFactory.daoAddressOf(ID)).to.not.equal(ethers.constants.AddressZero);
   });
 });

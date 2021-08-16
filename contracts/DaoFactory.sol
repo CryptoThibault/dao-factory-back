@@ -25,12 +25,13 @@ contract DaoFactory {
         string memory tokenSymbol
     ) public returns (bool) {
         _counter++;
+        Dao newDao = new Dao(msg.sender, tokenName, tokenSymbol);
         _businessId[_counter] = Business({
             name: name_,
             url: url_,
             author: msg.sender,
             createdAt: block.timestamp,
-            dao: new Dao(msg.sender, tokenName, tokenSymbol)
+            dao: newDao
         });
         emit Created(_counter, name_, url_, msg.sender, block.timestamp, daoAddressOf(_counter)); 
         return true;

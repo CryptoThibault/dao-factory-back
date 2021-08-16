@@ -2,35 +2,31 @@
 
 pragma solidity ^0.8.5;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "./Access.sol";
 import "./Governance.sol";
 import "./GovernanceToken.sol";
 import "./Treasury.sol";
 import "./Management.sol";
 
 
-contract Dao is AccessControl {
+contract Dao is Access {
     GovernanceToken private _token;
     Governance private _governance;
     Treasury private _treasury;
     Management private _management;
 
     uint256 public constant INTERVAL = 1 weeks;
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-    bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
-    bytes32 public constant TREASURIER_ROLE = keccak256("TREASURIER_ROLE");
 
     constructor(
-        address admin,
+        address defaultAdmin,
         string memory tokenName,
         string memory tokenSymbol
     ) {
-        _setupRole(DEFAULT_ADMIN_ROLE, admin);
+        _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _token = new GovernanceToken(tokenName, tokenSymbol);
         _governance = new Governance(address(_token));
-        _treasury = new Treasury();
-        _management = new Management();
+        //_treasury = new Treasury();
+        //_management = new Management();
     }
 
     function tokenAddress() public view returns (address) {
