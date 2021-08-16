@@ -22,9 +22,9 @@ contract Dao is Access {
         string memory tokenName,
         string memory tokenSymbol
     ) {
-        _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         _token = new GovernanceToken(tokenName, tokenSymbol);
         _governance = new Governance(address(_token));
+        _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
         //_treasury = new Treasury();
         //_management = new Management();
     }
