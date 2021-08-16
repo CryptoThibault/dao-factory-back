@@ -26,9 +26,10 @@ contract Treasury {
         emit Received(msg.sender, msg.value, block.timestamp);
     }
 
-    function simpleTransfer(address receiver_, uint amount_) {
-        payable(receiver_).sendValue(amount);
+    function simpleTransfer(address receiver_, uint amount_) public returns (bool) {
+        payable(receiver_).sendValue(amount_);
         emit Sended(receiver_, amount_, block.timestamp);
+        return true;
     } 
 
     function addCharge(

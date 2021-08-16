@@ -38,7 +38,7 @@ contract Management {
     function fire(address account) public returns (bool) {
         _employeesData[idOf(account)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
         _employeesId[account] = 0;
-        emit Fire(idOf(account), account, block.timestamp);
+        emit Fired(idOf(account), account, block.timestamp);
         return true;
     }
 
