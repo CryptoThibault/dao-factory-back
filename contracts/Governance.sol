@@ -7,8 +7,6 @@ import "./Access.sol";
 
 contract Governance {
     IERC20 private _token;
-    Access private _access;
-    uint256 public constant INTERVAL = 1 weeks;
 
     enum Choice {
         Yes,
