@@ -8,7 +8,6 @@ import "./Access.sol";
 contract Treasury is Access {
     using Address for address payable;
     struct Charge {
-        address dao;
         address sender;
         string name;
         address receiver;
@@ -23,8 +22,8 @@ contract Treasury is Access {
     event Sended(address receiver, uint256 amount, uint256 timestamp);
 
     mapping(address => uint256) private _daoBalances;
-    mapping(uint256 => Charge) private _charges;
-    uint256 private _counter;
+    mapping(address => mapping(uint => Charge)) private _charges;
+    mapping(address => uint) private _counters;
 
     function feed(address dao) public payable returns (bool) {
         _daoBalances[dao] += msg.value;
@@ -44,9 +43,8 @@ contract Treasury is Access {
         address receiver_,
         uint256 amount_
     ) public onlyRole(TREASURIER_ROLE) returns (bool) {
-        _counter++;
-        _charges[_counter] = Charge({
-            dao: dao_,
+        _counters[dao_]++;
+        _charges[dao_][_counters[dao_]] = Charge({
             sender: msg.sender,
             name: name_,
             receiver: receiver_,
@@ -54,33 +52,32 @@ contract Treasury is Access {
             createdAt: block.timestamp,
             active: true
         });
-        emit Created(_counter, name_, receiver_, amount_, block.timestamp);
+        emit Created(_counters[dao_], name_, receiver_, amount_, block.timestamp);
         return true;
     }
 
-    function changeSender(uint id, address newSender) public returns (bool) {
-      require(msg.sender == senderAt(id));
-      _charges[id].sender = newSender;
+    function changeSender(address dao, uint id, address newSender) public returns (bool) {
+      require(msg.sender == senderAt(dao, id));
+      _charges[dao][id].sender = newSender;
       return true;
     }
 
-    function cancelCharge(uint256 id) public returns (bool) {
-        require(msg.sender == senderAt(id));
-        _charges[id].active = false;
-        emit Canceled(id, nameAt(id), receiverAt(id), amountAt(id), block.timestamp);
+    function cancelCharge(address dao, uint256 id) public returns (bool) {
+        require(msg.sender == senderAt(dao, id));
+        _charges[dao][id].active = false;
+        emit Canceled(id, nameAt(dao, id), receiverAt(dao, id), amountAt(dao, id), block.timestamp);
         return true;
     }
 
-    function payCharge(uint256 id) public returns (bool) {
-        require(msg.sender == senderAt(id));
-        require(activeAt(id));
-        uint256 amount = amountAt(id);
-        _daoBalances[daoAt(id)] -= amount;
-        _daoBalances[receiverAt(id)] += amount;
-        emit Sended(receiverAt(id), amountAt(id), block.timestamp);
+    function payCharge(address dao, uint256 id) public returns (bool) {
+        require(msg.sender == senderAt(dao, id));
+        require(activeAt(dao, id));
+        uint256 amount = amountAt(dao, id);
+        _daoBalances[dao] -= amount;
+        _daoBalances[receiverAt(dao, id)] += amount;
+        emit Sended(receiverAt(dao, id), amountAt(dao, id), block.timestamp);
         return true;
     }
-
 
     function withdraw(address dao, uint amount) public onlyRole(ADMIN_ROLE) returns (bool) {
       require(treasuryOf(dao) >= amount);
@@ -104,31 +101,27 @@ contract Treasury is Access {
         return address(this).balance;
     }
 
-      function daoAt(uint256 id) public view returns (address) {
-        return _charges[id].dao;
+   function senderAt(address dao, uint256 id) public view returns (address) {
+        return _charges[dao][id].sender;
     }
 
-   function senderAt(uint256 id) public view returns (address) {
-        return _charges[id].sender;
+    function nameAt(address dao, uint256 id) public view returns (string memory) {
+        return _charges[dao][id].name;
     }
 
-    function nameAt(uint256 id) public view returns (string memory) {
-        return _charges[id].name;
+    function receiverAt(address dao, uint256 id) public view returns (address) {
+        return _charges[dao][id].receiver;
     }
 
-    function receiverAt(uint256 id) public view returns (address) {
-        return _charges[id].receiver;
+    function amountAt(address dao, uint256 id) public view returns (uint256) {
+        return _charges[dao][id].amount;
     }
 
-    function amountAt(uint256 id) public view returns (uint256) {
-        return _charges[id].amount;
+    function creationAt(address dao, uint256 id) public view returns (uint256) {
+        return _charges[dao][id].createdAt;
     }
 
-    function creationAt(uint256 id) public view returns (uint256) {
-        return _charges[id].createdAt;
-    }
-
-    function activeAt(uint256 id) public view returns (bool) {
-        return _charges[id].active;
+    function activeAt(address dao, uint256 id) public view returns (bool) {
+        return _charges[dao][id].active;
     }
 }
