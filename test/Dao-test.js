@@ -14,9 +14,6 @@ describe('Dao', async function () {
     dao = await Dao.connect(dev).deploy(alice.address, TOKEN_NAME, TOKEN_SYMBOL);
     await dao.deployed();
   });
-  it('should create a new Governance Token contract address', async function () {
-    expect(await dao.tokenAddress()).to.not.equal(ethers.constants.AddressZero);
-  });
   it('should create a new Governance contract address', async function () {
     expect(await dao.governanceAddress()).to.not.equal(ethers.constants.AddressZero);
   });

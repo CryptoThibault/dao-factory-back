@@ -3,11 +3,13 @@
 pragma solidity ^0.8.5;
 
 import "@openzeppelin/contracts/utils/Address.sol";
+import "./Access.sol";
 
-contract Treasury {
+contract Treasury is Access {
     using Address for address payable;
     struct Charge {
         string name;
+        address sender;
         address receiver;
         uint256 amount;
         uint256 createdAt;
@@ -19,60 +21,107 @@ contract Treasury {
     event Received(address sender, uint256 amount, uint256 timestamp);
     event Sended(address receiver, uint256 amount, uint256 timestamp);
 
-    mapping(uint256 => Charge) private _charges;
-    uint256 private _counter;
+    mapping(address => uint256) private _daoBalances;
+    mapping(address => mapping(uint => Charge)) private _charges;
+    mapping(address => uint) private _counters;
 
-    function feed() public payable {
-        emit Received(msg.sender, msg.value, block.timestamp);
+    function feed(address dao) public payable returns (bool) {
+        _daoBalances[dao] += msg.value;
+        return true;
     }
-    function simpleTransfer(address receiver_, uint amount_) public returns (bool) {
-        payable(receiver_).sendValue(amount_);
+
+    function simpleTransfer(address dao, address receiver_, uint amount_) public onlyRole(TREASURIER_ROLE) returns (bool) {
+        _daoBalances[dao] -= amount_;
+        _daoBalances[receiver_] += amount_;
         emit Sended(receiver_, amount_, block.timestamp);
         return true;
     } 
+
     function addCharge(
+        address dao_,
         string memory name_,
         address receiver_,
         uint256 amount_
-    ) public returns (bool) {
-        _counter++;
-        _charges[_counter] = Charge({
+    ) public onlyRole(TREASURIER_ROLE) returns (bool) {
+        _counters[dao_]++;
+        _charges[dao_][_counters[dao_]] = Charge({
             name: name_,
+            sender: msg.sender,
             receiver: receiver_,
             amount: amount_,
             createdAt: block.timestamp,
             active: true
         });
-        emit Created(_counter, name_, receiver_, amount_, block.timestamp);
+        emit Created(_counters[dao_], name_, receiver_, amount_, block.timestamp);
         return true;
     }
-    function cancelCharge(uint256 id) public returns (bool) {
-        _charges[id].active = false;
-        emit Canceled(id, nameAt(id), receiverAt(id), amountAt(id), block.timestamp);
+
+    function changeSender(address dao, uint id, address newSender) public returns (bool) {
+      require(msg.sender == senderOf(dao, id));
+      _charges[dao][id].sender = newSender;
+      return true;
+    }
+
+    function cancelCharge(address dao, uint256 id) public returns (bool) {
+        require(msg.sender == senderOf(dao, id));
+        _charges[dao][id].active = false;
+        emit Canceled(id, nameOf(dao, id), receiverOf(dao, id), amountOf(dao, id), block.timestamp);
         return true;
     }
-    function payCharge(uint256 id) public returns (bool) {
-        require(activeAt(id));
-        payable(receiverAt(id)).sendValue(amountAt(id));
-        emit Sended(receiverAt(id), amountAt(id), block.timestamp);
+
+    function payCharge(address dao, uint256 id) public returns (bool) {
+        require(msg.sender == senderOf(dao, id));
+        require(activeOf(dao, id));
+        uint256 amount = amountOf(dao, id);
+        _daoBalances[dao] -= amount;
+        _daoBalances[receiverOf(dao, id)] += amount;
+        emit Sended(receiverOf(dao, id), amountOf(dao, id), block.timestamp);
         return true;
     }
+
+    function withdraw(address dao, uint amount) public onlyRole(ADMIN_ROLE) returns (bool) {
+      require(treasuryOf(dao) >= amount);
+      _daoBalances[dao] -= amount;
+      payable(msg.sender).sendValue(amount);
+      return true;
+    }
+
+    function withdrawAll(address dao) public onlyRole(ADMIN_ROLE) returns (bool) {
+      uint amount = treasuryOf(dao);
+      _daoBalances[dao] = 0;
+      payable(msg.sender).sendValue(amount);
+      return true;
+    }
+
+    function treasuryOf(address dao) public view returns (uint) {
+      return _daoBalances[dao];
+    }
+
     function totalTreasury() public view returns (uint256) {
         return address(this).balance;
     }
-    function nameAt(uint256 id) public view returns (string memory) {
-        return _charges[id].name;
+
+   function senderOf(address dao, uint256 id) public view returns (address) {
+        return _charges[dao][id].sender;
     }
-    function receiverAt(uint256 id) public view returns (address) {
-        return _charges[id].receiver;
+
+    function nameOf(address dao, uint256 id) public view returns (string memory) {
+        return _charges[dao][id].name;
     }
-    function amountAt(uint256 id) public view returns (uint256) {
-        return _charges[id].amount;
+
+    function receiverOf(address dao, uint256 id) public view returns (address) {
+        return _charges[dao][id].receiver;
     }
-    function creationAt(uint256 id) public view returns (uint256) {
-        return _charges[id].createdAt;
+
+    function amountOf(address dao, uint256 id) public view returns (uint256) {
+        return _charges[dao][id].amount;
     }
-    function activeAt(uint256 id) public view returns (bool) {
-        return _charges[id].active;
+
+    function creationOf(address dao, uint256 id) public view returns (uint256) {
+        return _charges[dao][id].createdAt;
+    }
+
+    function activeOf(address dao, uint256 id) public view returns (bool) {
+        return _charges[dao][id].active;
     }
 }

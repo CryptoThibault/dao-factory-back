@@ -3,9 +3,8 @@
 pragma solidity ^0.8.5;
 
 import "./Dao.sol";
-import "./Treasury.sol";
 
-contract DaoFactory is Treasury {
+contract DaoFactory {
     struct Business {
         string name;
         string url;
