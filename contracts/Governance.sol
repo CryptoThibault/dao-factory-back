@@ -40,7 +40,9 @@ contract Governance is ERC20, Access {
     mapping(uint256 => Proposal) private _proposals;
     uint256 private _counter;
 
-    constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
+    constructor(address defaultAdmin, string memory name, string memory symbol) ERC20(name, symbol) {
+      _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
+    }
 
     function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) returns (bool) {
         _mint(to, amount);
