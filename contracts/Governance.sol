@@ -26,7 +26,6 @@ contract Governance is ERC20, Access {
         address author;
         uint256 createdAt;
         Status status;
-        mapping(address => uint256) voteUsed;
     }
 
     event Locked(address account, uint256 amount, uint256 timestamp);
@@ -37,6 +36,7 @@ contract Governance is ERC20, Access {
     event Rejected(uint256 id, uint256 nbNo, uint256 timestamp);
 
     mapping(address => uint256) private _lockBalances;
+    mapping(address => mapping(uint256 => uint256)) private _voteUsed;
     mapping(uint256 => Proposal) private _proposals;
     uint256 private _counter;
 
@@ -93,7 +93,7 @@ contract Governance is ERC20, Access {
     function vote(uint256 id, Choice choice) public returns (bool) {
         require(votingPower(msg.sender) >= 1);
         require(voteUsedOf(msg.sender, id) < votingPower(msg.sender));
-        _proposals[id].voteUsed[msg.sender] += votingPower(msg.sender);
+        _voteUsed[msg.sender][id] += votingPower(msg.sender);
         if (choice == Choice.Yes) {
             _proposals[id].nbYes += votingPower(msg.sender);
         } else if (choice == Choice.No) {
@@ -144,7 +144,7 @@ contract Governance is ERC20, Access {
     }
 
     function voteUsedOf(address account, uint256 id) public view returns (uint256) {
-        return _proposals[id].voteUsed[account];
+        return _voteUsed[account][id];
     }
 
     function totalLock() public view returns (uint256) {
