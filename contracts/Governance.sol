@@ -26,6 +26,7 @@ contract Governance is ERC20, Access {
         address author;
         uint256 createdAt;
         Status status;
+        mapping(address => uint256) voteUsed;
     }
 
     event Locked(address account, uint256 amount, uint256 timestamp);
@@ -39,10 +40,7 @@ contract Governance is ERC20, Access {
     mapping(uint256 => Proposal) private _proposals;
     uint256 private _counter;
 
-    constructor(
-        string memory name,
-        string memory symbol
-    ) ERC20(name, symbol) {}
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) {}
 
     function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) returns (bool) {
         _mint(to, amount);
@@ -69,7 +67,12 @@ contract Governance is ERC20, Access {
         return true;
     }
 
-    function propose(string memory description_, address account_, bytes32 role_, bool grant_) public onlyRole(PROPOSER_ROLE) returns (bool) {
+    function propose(
+        string memory description_,
+        address account_,
+        bytes32 role_,
+        bool grant_
+    ) public onlyRole(PROPOSER_ROLE) returns (bool) {
         require(grant_ ? !hasRole(role_, account_) : hasRole(role_, account_));
         _counter++;
         _proposals[_counter] = Proposal({
@@ -89,6 +92,8 @@ contract Governance is ERC20, Access {
 
     function vote(uint256 id, Choice choice) public returns (bool) {
         require(votingPower(msg.sender) >= 1);
+        require(voteUsedOf(msg.sender, id) < votingPower(msg.sender));
+        _proposals[id].voteUsed[msg.sender] += votingPower(msg.sender);
         if (choice == Choice.Yes) {
             _proposals[id].nbYes += votingPower(msg.sender);
         } else if (choice == Choice.No) {
@@ -97,9 +102,9 @@ contract Governance is ERC20, Access {
         emit Voted(msg.sender, votingPower(msg.sender), block.timestamp);
         if (nbYesOf(id) >= totalLock() / 2) {
             if (_proposals[id].grant) {
-              grantRole(_proposals[id].role, _proposals[id].account);
+                grantRole(_proposals[id].role, _proposals[id].account);
             } else {
-              revokeRole(_proposals[id].role, _proposals[id].account);
+                revokeRole(_proposals[id].role, _proposals[id].account);
             }
             _proposals[id].status = Status.Approved;
             emit Approved(id, nbYesOf(id), block.timestamp);
@@ -136,6 +141,10 @@ contract Governance is ERC20, Access {
 
     function votingPower(address account) public view returns (uint256) {
         return _lockBalances[account];
+    }
+
+    function voteUsedOf(address account, uint256 id) public view returns (uint256) {
+        return _proposals[id].voteUsed[account];
     }
 
     function totalLock() public view returns (uint256) {
