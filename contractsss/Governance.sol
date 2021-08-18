@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.5;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./Access.sol";
@@ -35,14 +35,18 @@ contract Governance is ERC20, Access {
     event Approved(uint256 id, uint256 nbYes, uint256 timestamp);
     event Rejected(uint256 id, uint256 nbNo, uint256 timestamp);
 
+    address private _dao;
     mapping(address => uint256) private _lockBalances;
     mapping(uint256 => Proposal) private _proposals;
     uint256 private _counter;
 
     constructor(
+        address dao_,
         string memory name,
         string memory symbol
-    ) ERC20(name, symbol) {}
+    ) ERC20(name, symbol) {
+        _dao = dao_;
+    }
 
     function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) returns (bool) {
         _mint(to, amount);

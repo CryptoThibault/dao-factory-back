@@ -1,12 +1,12 @@
-// SPDX-License-Identifier: MIT
-
-pragma solidity ^0.8.5;
+pragma solidity ^0.8.7;
 
 import "./Access.sol";
 import "./Governance.sol";
+import "./Treasury.sol";
 
 contract Dao is Access {
     Governance private _governance;
+    Treasury private _treasury;
 
     constructor(
         address defaultAdmin,
@@ -14,10 +14,15 @@ contract Dao is Access {
         string memory tokenSymbol
     ) {
         _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
-        _governance = new Governance(address(this), tokenName, tokenSymbol);
+        _governance = new Governance(tokenName, tokenSymbol);
+        _treasury = new Treasury();
     }
 
-     function governanceAddress() public view returns (address) {
+    function governanceAddress() public view returns (address) {
         return address(_governance);
+    }
+
+    function treasuryAddress() public view returns (address) {
+        return address(_treasury);
     }
 }

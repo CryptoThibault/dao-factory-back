@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.5;
 
 import "./Dao.sol";
+import "./Treasury.sol";
 
 contract DaoFactory {
     struct Business {
@@ -33,30 +34,24 @@ contract DaoFactory {
             createdAt: block.timestamp,
             dao: newDao
         });
-        emit Created(_counter, name_, url_, msg.sender, block.timestamp, daoAddressOf(_counter));
+        emit Created(_counter, name_, url_, msg.sender, block.timestamp, daoAddressOf(_counter)); 
         return true;
     }
-
     function nameOf(uint256 id) public view returns (string memory) {
         return _businessId[id].name;
     }
-
     function urlOf(uint256 id) public view returns (string memory) {
         return _businessId[id].url;
     }
-
     function authorOf(uint256 id) public view returns (address) {
         return _businessId[id].author;
     }
-
     function creationOf(uint256 id) public view returns (uint256) {
         return _businessId[id].createdAt;
     }
-
     function daoAddressOf(uint256 id) public view returns (address) {
         return address(_businessId[id].dao);
     }
-
     function lastId() public view returns (uint256) {
         return _counter;
     }
