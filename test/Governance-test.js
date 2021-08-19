@@ -11,6 +11,7 @@ describe('Governance', async function () {
   const LOCK_AMOUNT = ethers.utils.parseEther('10');
   const DEFAULT_ADMIN_ROLE = ethers.utils.id('DEFAULT_ADMIN_ROLE');
   const MINTER_ROLE = ethers.utils.id('MINTER_ROLE');
+  const BURNER_ROLE = ethers.utils.id('BURNER_ROLE');
 
   beforeEach(async function () {
     [dev, alice, bob] = await ethers.getSigners();
@@ -32,19 +33,26 @@ describe('Governance', async function () {
       await governance.connect(dev).grantRole(MINTER_ROLE, dev.address);
       await governance.mint(alice.address, AMOUNT);
     });
-    it('should mint the good amount for alice', async function () {
+    it('should mint good amount for alice', async function () {
       expect(await governance.balanceOf(alice.address)).to.equal(AMOUNT);
+    });
+    it('should burn good amount for alice', async function () {
+      await governance.connect(dev).grantRole(BURNER_ROLE, dev.address);
+      await governance.connect(dev).burn(alice.address, AMOUNT);
+      expect(await governance.balanceOf(alice.address)).to.equal(0);
     });
   });
   describe('Token Lock', async function () {
     beforeEach(async function () {
       await governance.connect(dev).grantRole(MINTER_ROLE, dev.address);
       await governance.mint(alice.address, AMOUNT);
-      await governance.connect(alice).approve(governance.address, AMOUNT);
-      await governance.lock(LOCK_AMOUNT);
+      await governance.connect(alice).approve(governance.address, LOCK_AMOUNT);
     });
     it('should lock the good amount for alice', async function () {
+      await governance.connect(alice).lock(LOCK_AMOUNT);
       expect(await governance.votingPowerOf(alice.address)).to.equal(LOCK_AMOUNT);
     });
   });
+  describe('Proposal', async function () { });
+  describe('Vote', async function () { });
 });
