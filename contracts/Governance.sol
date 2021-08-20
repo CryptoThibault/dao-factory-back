@@ -103,10 +103,10 @@ contract Governance is ERC20, Access {
         }
         emit Voted(msg.sender, votingPower(msg.sender), block.timestamp);
         if (nbYesOf(id) >= totalLock() / 2) {
-            if (_proposals[id].grant) {
-                grantRole(_proposals[id].role, _proposals[id].account);
+            if (grantOf(id)) {
+                grantRole(roleOf(id), accountOf(id));
             } else {
-                revokeRole(_proposals[id].role, _proposals[id].account);
+                revokeRole(roleOf(id), accountOf(id));
             }
             _proposals[id].status = Status.Approved;
             emit Approved(id, nbYesOf(id), block.timestamp);
@@ -119,6 +119,18 @@ contract Governance is ERC20, Access {
 
     function descriptionOf(uint256 id) public view returns (string memory) {
         return _proposals[id].description;
+    }
+
+    function accountOf(uint id) public view returns (address) {
+        return _proposals[id].account;
+    }
+
+    function roleOf(uint id) public view returns (bytes32) {
+        return _proposals[id].role;
+    }
+
+    function grantOf(uint id) public view returns (bool) {
+      return _proposals[id].grant;
     }
 
     function authorOf(uint256 id) public view returns (address) {
