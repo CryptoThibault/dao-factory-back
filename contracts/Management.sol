@@ -17,6 +17,7 @@ contract Management is Access {
 
     event Employed(uint256 id, address account, uint256 salary, uint256 timestamp);
     event Fired(uint256 id, address account, uint256 timestamp);
+    event Resigned(uint256 id, address account, uint256 timestamp);
     event Payed(address account, uint256 amount, uint256 time, uint256 timestamp);
 
     mapping(address => uint256) private _employeesId;
@@ -24,6 +25,7 @@ contract Management is Access {
     uint256 private _counter;
 
     function employ(address account_, uint256 salary_) public onlyRole(MANAGER_ROLE) returns (bool) {
+      require(account_ != msg.sender, "Management: cannot employ yourself");
         _counter++;
         _employeesId[account_] = _counter;
         _employeesData[_counter] = Employee({
@@ -36,11 +38,17 @@ contract Management is Access {
         return true;
     }
 
-    function fire(address account) public returns (bool) {
+    function fire(address account) public onlyRole(MANAGER_ROLE) returns (bool) {
         _employeesData[idOf(account)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
         _employeesId[account] = 0;
         emit Fired(idOf(account), account, block.timestamp);
         return true;
+    }
+
+    function resign() public returns (bool) {
+      _employeesData[idOf(msg.sender)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
+      _employeesId[account] = 0;
+      emit Resigned(idOf(msg.sender), msg.sender, block.timestamp);
     }
 
     function payout() public returns (bool) {
@@ -48,19 +56,23 @@ contract Management is Access {
         uint256 timestamp = block.timestamp;
         uint256 nbPayout = timestamp - lastPayoutOf(msg.sender) / INTERVAL;
         uint256 amount = salaryOf(msg.sender) * nbPayout;
-        _employeesData[id(msg.sender)].lastPayout = timestamp;
+        _employeesData[idOf(msg.sender)].lastPayout = timestamp;
         payable(msg.sender).sendValue(amount);
         emit Payed(msg.sender, amount, nbPayout, timestamp);
         return true;
     }
 
     function idOf(address account) public view returns (uint256) {
-        require(_employeesId[account] != 0);
+        require(_employeesId[account] != 0, "Management: this account is not employeed here");
         return _employeesId[account];
     }
 
     function salaryOf(address account) public view returns (uint256) {
         return _employeesData[idOf(account)].salary;
+    }
+
+    function  employmentOf(address account) public view returns (uint256) {
+        return _employeesData[idOf(account)].employedAt;
     }
 
     function lastPayoutOf(address account) public view returns (uint256) {
