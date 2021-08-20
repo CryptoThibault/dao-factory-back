@@ -2,11 +2,10 @@
 
 pragma solidity ^0.8.7;
 
-import "./Management.sol";
 import "./Access.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
-contract Treasury is Management, Access {
+contract Treasury is Access {
     using Address for address payable;
     struct Charge {
         string name;

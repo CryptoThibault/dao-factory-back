@@ -3,10 +3,12 @@ pragma solidity ^0.8.7;
 import "./Access.sol";
 import "./Governance.sol";
 import "./Treasury.sol";
+import "./Management.sol";
 
 contract Dao is Access {
     Governance private _governance;
     Treasury private _treasury;
+    Management private _management;
 
     constructor(
         address defaultAdmin,
@@ -15,6 +17,7 @@ contract Dao is Access {
     ) {
         _governance = new Governance(defaultAdmin, tokenName, tokenSymbol);
         _treasury = new Treasury();
+        _management = new Management();
     }
 
     function governanceAddress() public view returns (address) {
@@ -23,5 +26,9 @@ contract Dao is Access {
 
     function treasuryAddress() public view returns (address) {
         return address(_treasury);
+    }
+
+    function managementAddress() public view returns (address) {
+        return address(_management);
     }
 }

@@ -2,9 +2,10 @@
 
 pragma solidity ^0.8.7;
 
+import "./Access.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
-contract Management {
+contract Management is Access {
     using Address for address payable;
     uint256 public constant INTERVAL = 1 weeks;
     struct Employee {
@@ -22,7 +23,7 @@ contract Management {
     mapping(uint256 => Employee) private _employeesData;
     uint256 private _counter;
 
-    function employ(address account_, uint256 salary_) public returns (bool) {
+    function employ(address account_, uint256 salary_) public onlyRole(MANAGER_ROLE) returns (bool) {
         _counter++;
         _employeesId[account_] = _counter;
         _employeesData[_counter] = Employee({
@@ -44,10 +45,12 @@ contract Management {
 
     function payout() public returns (bool) {
         require(lastPayoutOf(msg.sender) < block.timestamp);
-        uint256 nbPayout = block.timestamp - lastPayoutOf(msg.sender) / INTERVAL;
+        uint256 timestamp = block.timestamp;
+        uint256 nbPayout = timestamp - lastPayoutOf(msg.sender) / INTERVAL;
         uint256 amount = salaryOf(msg.sender) * nbPayout;
+        _employeesData[id(msg.sender)].lastPayout = timestamp;
         payable(msg.sender).sendValue(amount);
-        emit Payed(msg.sender, amount, nbPayout, block.timestamp);
+        emit Payed(msg.sender, amount, nbPayout, timestamp);
         return true;
     }
 

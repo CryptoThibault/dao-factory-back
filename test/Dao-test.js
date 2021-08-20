@@ -19,4 +19,7 @@ describe('Dao', async function () {
   it('should create a new Treasury contract address', async function () {
     expect(await dao.treasuryAddress()).to.not.equal(ethers.constants.AddressZero);
   });
+  it('should create a new Management contract address', async function () {
+    expect(await dao.managementAddress()).to.not.equal(ethers.constants.AddressZero);
+  });
 });

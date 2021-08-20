@@ -34,4 +34,7 @@ describe('DaoFactory', async function () {
   it('should create a Business with a new Dao contract address', async function () {
     expect(await daoFactory.daoAddressOf(ID)).to.not.equal(ethers.constants.AddressZero);
   });
+  it('should increase counter', async function () {
+    expect(await daoFactory.lastId()).to.equal(ID);
+  });
 });
