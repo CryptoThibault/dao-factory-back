@@ -47,7 +47,7 @@ contract Management is Access {
 
     function resign() public returns (bool) {
       _employeesData[idOf(msg.sender)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
-      _employeesId[account] = 0;
+      _employeesId[msg.sender] = 0;
       emit Resigned(idOf(msg.sender), msg.sender, block.timestamp);
     }
 

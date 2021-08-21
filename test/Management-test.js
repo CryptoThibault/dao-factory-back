@@ -4,12 +4,17 @@ const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
 describe('Management', async function () {
-  let Management, management, dev, alice, bob;
+  let Dao, dao, Management, management, dev, alice, bob;
+  const TOKEN_NAME = 'Business 1 Token';
+  const TOKEN_SYMBOL = 'BS1';
   const MANAGER_ROLE = ethers.utils.id('MANAGER_ROLE');
   const EMPLOYEE_ID = 1;
   const SALARY = ethers.utils.parseEther('0.01');
   beforeEach(async function () {
     [dev, alice, bob] = await ethers.getSigners();
+    Dao = await ethers.getContractFactory('Dao');
+    dao = await Dao.connect(dev).deploy(dev.address, TOKEN_NAME, TOKEN_SYMBOL);
+    await dao.deployed();
     Management = await ethers.getContractFactory('Management');
     management = await Management.connect(dev).deploy();
     await management.deployed();
