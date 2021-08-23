@@ -15,6 +15,7 @@ contract Management {
         uint256 lastPayout;
     }
 
+    event Received(address sender, uint256 amount, uint256 timestamp);
     event Employed(uint256 id, address account, uint256 salary, uint256 timestamp);
     event Fired(uint256 id, address account, uint256 timestamp);
     event Resigned(uint256 id, address account, uint256 timestamp);
@@ -27,6 +28,10 @@ contract Management {
 
     constructor() {
         _dao = Dao(msg.sender);
+    }
+
+    function feed() public payable {
+        emit Received(msg.sender, msg.value, block.timestamp);
     }
 
     function employ(address account_, uint256 salary_) public returns (bool) {

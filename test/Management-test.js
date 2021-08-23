@@ -10,6 +10,7 @@ describe('Management', async function () {
   const MANAGER_ROLE = ethers.utils.id('MANAGER_ROLE');
   const EMPLOYEE_ID = 1;
   const SALARY = ethers.utils.parseEther('0.01');
+  const AMOUNT = ethers.utils.parseEther('0.1');
   beforeEach(async function () {
     [dev, alice, bob] = await ethers.getSigners();
     Dao = await ethers.getContractFactory('Dao');
@@ -42,5 +43,10 @@ describe('Management', async function () {
       await expect(management.idOf(bob.address)).to.be.revertedWith('Management: this account is not employeed here');
     });
   });
-  describe('Payout', async function () { });
+  describe('Payout', async function () {
+    beforeEach(async function () {
+      await management.connect(dev).feed({ value: AMOUNT });
+      await management.grantRole(MANAGER_ROLE, alice.address);
+    });
+  });
 });

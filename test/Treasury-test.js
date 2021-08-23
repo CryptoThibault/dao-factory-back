@@ -4,13 +4,18 @@ const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
 describe('Treasury', async function () {
-  let Treasury, treasury, dev, alice, bob;
+  let Dao, dao, Treasury, treasury, dev, alice, bob;
+  const TOKEN_NAME = 'Business 1 Token';
+  const TOKEN_SYMBOL = 'BS1';
   const TREASURIER_ROLE = ethers.utils.id('TREASURIER_ROLE');
   const CHARGE_ID = 1;
   const CHARGE_NAME = 'Charge 1';
   const AMOUNT = ethers.utils.parseEther('0.01');
   beforeEach(async function () {
     [dev, alice, bob] = await ethers.getSigners();
+    Dao = await ethers.getContractFactory('Dao');
+    dao = await Dao.connect(dev).deploy(dev.address, TOKEN_NAME, TOKEN_SYMBOL);
+    await dao.deployed();
     Treasury = await ethers.getContractFactory('Treasury');
     treasury = await Treasury.connect(dev).deploy();
     await treasury.deployed();
