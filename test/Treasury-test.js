@@ -29,6 +29,9 @@ describe('Treasury', async function () {
     it('should create a charge with good amount', async function () {
       expect(await treasury.amountOf(CHARGE_ID)).to.equal(AMOUNT);
     });
+    it('should create an active charge', async function () {
+      expect(await treasury.activeOf(CHARGE_ID)).to.equal(true);
+    });
   });
   describe('Pay Charge', async function () {
     let PAYCHARGE;
@@ -43,6 +46,13 @@ describe('Treasury', async function () {
     });
     it('should decrease total treasury', async function () {
       expect(await treasury.totalTreasury()).to.equal(0);
+    });
+    it('should update counter of this charge', async function () {
+      expect(await treasury.counterOf(CHARGE_ID)).to.equal(1);
+    });
+    it('should disactive this charge', async function () {
+      await treasury.connect(alice).cancelCharge(CHARGE_ID);
+      expect(await treasury.activeOf(CHARGE_ID)).to.equal(false);
     });
   });
   describe('Simple Transfer', async function () { });

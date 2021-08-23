@@ -13,6 +13,7 @@ contract Treasury is Access {
         uint256 amount;
         uint256 createdAt;
         bool active;
+        uint counter;
     }
 
     event Created(uint256 id, string name, address receiver, uint256 amount, uint256 timestamp);
@@ -44,7 +45,8 @@ contract Treasury is Access {
             receiver: receiver_,
             amount: amount_,
             createdAt: block.timestamp,
-            active: true
+            active: true,
+            counter: 0
         });
         emit Created(_counter, name_, receiver_, amount_, block.timestamp);
         return true;
@@ -58,6 +60,7 @@ contract Treasury is Access {
 
     function payCharge(uint256 id) public onlyRole(TREASURIER_ROLE) returns (bool) {
         require(activeOf(id));
+        _charges[id].counter++;
         payable(receiverOf(id)).sendValue(amountOf(id));
         emit Sended(receiverOf(id), amountOf(id), block.timestamp);
         return true;
@@ -85,5 +88,8 @@ contract Treasury is Access {
 
     function activeOf(uint256 id) public view returns (bool) {
         return _charges[id].active;
+    }
+    function counterOf(uint id) public view returns (uint) {
+      return _charges[id].counter;
     }
 }
