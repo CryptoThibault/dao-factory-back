@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.7;
 
-import "./Access.sol";
+import "./Dao.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
-contract Management is Access {
+contract Management {
     using Address for address payable;
     uint256 public constant INTERVAL = 1 weeks;
     struct Employee {
@@ -20,12 +20,18 @@ contract Management is Access {
     event Resigned(uint256 id, address account, uint256 timestamp);
     event Payed(address account, uint256 amount, uint256 time, uint256 timestamp);
 
+    Dao private _dao;
     mapping(address => uint256) private _employeesId;
     mapping(uint256 => Employee) private _employeesData;
     uint256 private _counter;
 
-    function employ(address account_, uint256 salary_) public onlyRole(MANAGER_ROLE) returns (bool) {
-      require(account_ != msg.sender, "Management: cannot employ yourself");
+    constructor() {
+        _dao = Dao(msg.sender);
+    }
+
+    function employ(address account_, uint256 salary_) public returns (bool) {
+        require(_dao.hasRole(_dao.MANAGER_ROLE, msg.sender), "Management: only Manager Role can use this function");
+        require(account_ != msg.sender, "Management: cannot employ yourself");
         _counter++;
         _employeesId[account_] = _counter;
         _employeesData[_counter] = Employee({
@@ -38,7 +44,8 @@ contract Management is Access {
         return true;
     }
 
-    function fire(address account) public onlyRole(MANAGER_ROLE) returns (bool) {
+    function fire(address account) public returns (bool) {
+        require(_dao.hasRole(_dao.MANAGER_ROLE, msg.sender), "Management: only Manager Role can use this function");
         _employeesData[idOf(account)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
         _employeesId[account] = 0;
         emit Fired(idOf(account), account, block.timestamp);
@@ -46,9 +53,9 @@ contract Management is Access {
     }
 
     function resign() public returns (bool) {
-      _employeesData[idOf(msg.sender)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
-      _employeesId[msg.sender] = 0;
-      emit Resigned(idOf(msg.sender), msg.sender, block.timestamp);
+        _employeesData[idOf(msg.sender)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
+        _employeesId[msg.sender] = 0;
+        emit Resigned(idOf(msg.sender), msg.sender, block.timestamp);
     }
 
     function payout() public returns (bool) {
@@ -71,7 +78,7 @@ contract Management is Access {
         return _employeesData[idOf(account)].salary;
     }
 
-    function  employmentOf(address account) public view returns (uint256) {
+    function employmentOf(address account) public view returns (uint256) {
         return _employeesData[idOf(account)].employedAt;
     }
 

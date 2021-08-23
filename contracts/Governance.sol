@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.7;
 
+import "./Dao.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "./Access.sol";
 
-contract Governance is ERC20, Access {
+contract Governance is ERC20 {
     enum Choice {
         Yes,
         No
@@ -35,21 +35,24 @@ contract Governance is ERC20, Access {
     event Approved(uint256 id, uint256 nbYes, uint256 timestamp);
     event Rejected(uint256 id, uint256 nbNo, uint256 timestamp);
 
+    Dao private _dao;
     mapping(address => uint256) private _lockBalances;
     mapping(address => mapping(uint256 => uint256)) private _voteUsed;
     mapping(uint256 => Proposal) private _proposals;
     uint256 private _counter;
 
-    constructor(address defaultAdmin, string memory name, string memory symbol) ERC20(name, symbol) {
-      _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) {
+        _dao = Dao(msg.sender);
     }
 
-    function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) returns (bool) {
+    function mint(address to, uint256 amount) public returns (bool) {
+        require(_dao.hasRole(_dao.MINTER_ROLE, msg.sender), "Governance: only Minter Role can use this function");
         _mint(to, amount);
         return true;
     }
 
-    function burn(address from, uint256 amount) public onlyRole(BURNER_ROLE) returns (bool) {
+    function burn(address from, uint256 amount) public returns (bool) {
+        require(_dao.hasRole(_dao.BURNER_ROLE, msg.sender), "Governance: only Burner Role can use this function");
         _burn(from, amount);
         return true;
     }
@@ -74,8 +77,9 @@ contract Governance is ERC20, Access {
         address account_,
         bytes32 role_,
         bool grant_
-    ) public onlyRole(PROPOSER_ROLE) returns (bool) {
-        require(grant_ ? !hasRole(role_, account_) : hasRole(role_, account_));
+    ) public returns (bool) {
+        require(_dao.hasRole(_dao.PROPOSER_ROLE, msg.sender), "Governance: only Proposer Role can use this function");
+        require(grant_ ? !_dao.hasRole(role_, account_) : _dao.hasRole(role_, account_));
         _counter++;
         _proposals[_counter] = Proposal({
             description: description_,
@@ -104,9 +108,9 @@ contract Governance is ERC20, Access {
         emit Voted(msg.sender, votingPower(msg.sender), block.timestamp);
         if (nbYesOf(id) >= totalLock() / 2) {
             if (grantOf(id)) {
-                grantRole(roleOf(id), accountOf(id));
+                _dao.grantRole(roleOf(id), accountOf(id));
             } else {
-                revokeRole(roleOf(id), accountOf(id));
+                _dao.revokeRole(roleOf(id), accountOf(id));
             }
             _proposals[id].status = Status.Approved;
             emit Approved(id, nbYesOf(id), block.timestamp);
@@ -121,16 +125,16 @@ contract Governance is ERC20, Access {
         return _proposals[id].description;
     }
 
-    function accountOf(uint id) public view returns (address) {
+    function accountOf(uint256 id) public view returns (address) {
         return _proposals[id].account;
     }
 
-    function roleOf(uint id) public view returns (bytes32) {
+    function roleOf(uint256 id) public view returns (bytes32) {
         return _proposals[id].role;
     }
 
-    function grantOf(uint id) public view returns (bool) {
-      return _proposals[id].grant;
+    function grantOf(uint256 id) public view returns (bool) {
+        return _proposals[id].grant;
     }
 
     function authorOf(uint256 id) public view returns (address) {
