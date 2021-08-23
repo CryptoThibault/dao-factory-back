@@ -50,9 +50,9 @@ describe('Governance', async function () {
       await governance.connect(dev).grantRole(MINTER_ROLE, dev.address);
       await governance.mint(alice.address, AMOUNT);
       await governance.connect(alice).approve(governance.address, LOCK_AMOUNT);
+      await governance.lock(LOCK_AMOUNT);
     });
     it('should lock the good amount for alice', async function () {
-      await governance.connect(alice).lock(LOCK_AMOUNT);
       expect(await governance.votingPowerOf(alice.address)).to.equal(LOCK_AMOUNT);
     });
   });
@@ -74,5 +74,35 @@ describe('Governance', async function () {
       expect(await governance.grantOf(PROPOSAL_ID)).to.equal(true);
     });
   });
-  describe('Vote', async function () { });
+  describe('Vote', async function () {
+    beforeEach(async function () {
+      await governance.connect(dev).grantRole(PROPOSER_ROLE, alice.address);
+      await governance.grantRole(MINTER_ROLE, dev.address);
+      await governance.mint(dev.address, AMOUNT);
+      await governance.mint(alice.address, AMOUNT);
+      await governance.mint(bob.address, AMOUNT);
+      await governance.approve(governance.address, LOCK_AMOUNT);
+      await governance.lock(LOCK_AMOUNT);
+      await governance.connect(alice).propose(PROPOSAL_DESCRIPTION, alice.address, MINTER_ROLE, true);
+      await governance.approve(governance.address, LOCK_AMOUNT);
+      await governance.lock(LOCK_AMOUNT);
+      await governance.connect(bob).approve(governance.address, LOCK_AMOUNT);
+      await governance.lock(LOCK_AMOUNT);
+      await governance.connect(dev).vote(PROPOSAL_ID, 0);
+      await governance.connect(alice).vote(PROPOSAL_ID, 0);
+      await governance.connect(bob).vote(PROPOSAL_ID, 1);
+    });
+    it('should read the good number of Yes', async function () {
+      expect(await governance.nbYesOf(PROPOSAL_ID)).to.equal(LOCK_AMOUNT.mul(2));
+    });
+    it('should read the good number of No', async function () {
+      expect(await governance.nbNoOf(PROPOSAL_ID)).to.equal(LOCK_AMOUNT);
+    });
+    it('should approved this proposal', async function () {
+      expect(await governance.statusOf(PROPOSAL_ID)).to.equal(1);
+    });
+    it('should grant Minter role to alice', async function () {
+      expect(await governance.hasRole(MINTER_ROLE, alice.address)).to.equal(true);
+    });
+  });
 });
