@@ -19,6 +19,7 @@ contract Treasury {
     event Created(uint256 id, string name, address receiver, uint256 amount, uint256 timestamp);
     event Canceled(uint256 id, string name, address receiver, uint256 amount, uint256 timestamp);
     event Received(address sender, uint256 amount, uint256 timestamp);
+    event Withdrew(address reiceiver, uint256 amount, uint256 timestamp);
     event Sended(address receiver, uint256 amount, uint256 timestamp);
 
     Dao private _dao;
@@ -75,19 +76,19 @@ contract Treasury {
         return true;
     }
 
-    function withdraw(address dao, uint256 amount) public returns (bool) {
+    function withdraw(uint256 amount) public returns (bool) {
         require(_dao.hasRole(_dao.ADMIN_ROLE, msg.sender), "Treasury: only Admin Role can use this function");
-        require(treasuryOf(dao) >= amount);
-        _daoBalances[dao] -= amount;
+        require(totalTreasury() >= amount, "Treasury: cannot withdraw more than total treasury");
         payable(msg.sender).sendValue(amount);
+        emit Withdrew(msg.sender, amount, block.timestamp);
         return true;
     }
 
-    function withdrawAll(address dao) public returns (bool) {
+    function withdrawAll() public returns (bool) {
         require(_dao.hasRole(_dao.ADMIN_ROLE, msg.sender), "Treasury: only Admin Role can use this function");
-        uint256 amount = treasuryOf(dao);
-        _daoBalances[dao] = 0;
+        uint256 amount = totalTreasury();
         payable(msg.sender).sendValue(amount);
+        emit Withdrew(msg.sender, amount, block.timestamp);
         return true;
     }
 
