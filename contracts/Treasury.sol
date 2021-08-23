@@ -75,6 +75,22 @@ contract Treasury {
         return true;
     }
 
+    function withdraw(address dao, uint256 amount) public returns (bool) {
+        require(_dao.hasRole(_dao.ADMIN_ROLE, msg.sender), "Treasury: only Admin Role can use this function");
+        require(treasuryOf(dao) >= amount);
+        _daoBalances[dao] -= amount;
+        payable(msg.sender).sendValue(amount);
+        return true;
+    }
+
+    function withdrawAll(address dao) public returns (bool) {
+        require(_dao.hasRole(_dao.ADMIN_ROLE, msg.sender), "Treasury: only Admin Role can use this function");
+        uint256 amount = treasuryOf(dao);
+        _daoBalances[dao] = 0;
+        payable(msg.sender).sendValue(amount);
+        return true;
+    }
+
     function totalTreasury() public view returns (uint256) {
         return address(this).balance;
     }
