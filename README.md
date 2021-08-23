@@ -8,10 +8,8 @@ Protocol Stucture:
 
 ```
 DaoFactory
-├── Dao
-│   ├── GovernanceToken
-│   ├── Access
-│   ├── Governance
-│   ├── Treasury
-│   └── Management
+├── Dao ── Access
+│   ├── Governance ── ERC20 ── Access
+│   ├── Treasury ── Access
+│   └── Management ── Access
 ```
