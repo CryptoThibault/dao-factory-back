@@ -30,6 +30,20 @@ describe('Treasury', async function () {
       expect(await treasury.amountOf(CHARGE_ID)).to.equal(AMOUNT);
     });
   });
-  describe('Pay Charge', async function () { });
+  describe('Pay Charge', async function () {
+    let PAYCHARGE;
+    beforeEach(async function () {
+      await treasury.connect(dev).grantRole(TREASURIER_ROLE, alice.address);
+      await treasury.connect(alice).addCharge(CHARGE_NAME, bob.address, AMOUNT);
+      await treasury.connect(dev).feed({ value: AMOUNT });
+      PAYCHARGE = await treasury.connect(alice).paycharge(CHARGE_ID);
+    });
+    it('should pay the charge to bob', async function () {
+      expect(PAYCHARGE).to.changeEtherBalances([treasury, bob], [-AMOUNT, AMOUNT]);
+    });
+    it('should decrease total treasury', async function () {
+      expect(await treasury.totalTreasury()).to.equal(0);
+    });
+  });
   describe('Simple Transfer', async function () { });
 });
