@@ -9,7 +9,6 @@ describe('Governance', async function () {
   const TOKEN_SYMBOL = 'BS1';
   const AMOUNT = ethers.utils.parseEther('20');
   const LOCK_AMOUNT = ethers.utils.parseEther('10');
-  const DEFAULT_ADMIN_ROLE = ethers.utils.id('DEFAULT_ADMIN_ROLE');
   const MINTER_ROLE = ethers.utils.id('MINTER_ROLE');
   const BURNER_ROLE = ethers.utils.id('BURNER_ROLE');
   const PROPOSER_ROLE = ethers.utils.id('PROPOSER_ROLE');
@@ -30,9 +29,6 @@ describe('Governance', async function () {
   });
   it('should create token with the good symbol', async function () {
     expect(await governance.symbol()).to.equal(TOKEN_SYMBOL);
-  });
-  it('should asign dev as default admin', async function () {
-    expect(await governance.hasRole(DEFAULT_ADMIN_ROLE, dev.address)).to.equal(true);
   });
   describe('Token Mint', async function () {
     beforeEach(async function () {

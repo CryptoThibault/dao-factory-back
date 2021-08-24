@@ -47,6 +47,8 @@ describe('Management', async function () {
     beforeEach(async function () {
       await management.connect(dev).feed({ value: AMOUNT });
       await management.grantRole(MANAGER_ROLE, alice.address);
+      await management.connect(alice).employ(bob.address, SALARY);
+      await management.connect(bob).payout();
     });
   });
 });

@@ -20,6 +20,10 @@ describe('Treasury', async function () {
     treasury = await Treasury.connect(dev).deploy();
     await treasury.deployed();
   });
+  it('should feed the contract with the good amount', async function () {
+    expect(await treasury.connect(dev).feed({ value: AMOUNT }))
+      .to.changeEtherBalances([dev, treasury], [-AMOUNT, AMOUNT]);
+  });
   describe('Create Charge', async function () {
     beforeEach(async function () {
       await treasury.connect(dev).grantRole(TREASURIER_ROLE, alice.address);
@@ -60,5 +64,15 @@ describe('Treasury', async function () {
       expect(await treasury.activeOf(CHARGE_ID)).to.equal(false);
     });
   });
-  describe('Simple Transfer', async function () { });
+  describe('Simple Transfer', async function () {
+    let SIMPLETRANSFER;
+    beforeEach(async function () {
+      await treasury.connect(dev).grantRole(TREASURIER_ROLE, alice.address);
+      await treasury.feed({ value: AMOUNT });
+      SIMPLETRANSFER = await treasury.connect(alice).simpleTransfer(bob.address, AMOUNT);
+    });
+    it('should transfer the good amount to bob', async function () {
+      expect(SIMPLETRANSFER).to.changeEtherBalances([treasury, bob], [-AMOUNT, AMOUNT]);
+    });
+  });
 });
