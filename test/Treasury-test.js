@@ -19,14 +19,14 @@ describe('Treasury', async function () {
     Treasury = await ethers.getContractFactory('Treasury');
     treasury = await Treasury.connect(dev).deploy();
     await treasury.deployed();
+    await dao.connect(dev).grantRole(TREASURIER_ROLE, alice.address);
   });
   it('should feed the contract with the good amount', async function () {
     expect(await treasury.connect(dev).feed({ value: AMOUNT }))
-      .to.changeEtherBalances([dev, treasury], [-AMOUNT, AMOUNT]);
+      .to.changeEtherBalances([dev, treasury], [AMOUNT.mul(-1), AMOUNT]);
   });
   describe('Create Charge', async function () {
     beforeEach(async function () {
-      await treasury.connect(dev).grantRole(TREASURIER_ROLE, alice.address);
       await treasury.connect(alice).addCharge(CHARGE_NAME, bob.address, AMOUNT);
     });
     it('should create a charge with good name', async function () {
@@ -45,7 +45,6 @@ describe('Treasury', async function () {
   describe('Pay Charge', async function () {
     let PAYCHARGE;
     beforeEach(async function () {
-      await treasury.connect(dev).grantRole(TREASURIER_ROLE, alice.address);
       await treasury.connect(alice).addCharge(CHARGE_NAME, bob.address, AMOUNT);
       await treasury.connect(dev).feed({ value: AMOUNT });
       PAYCHARGE = await treasury.connect(alice).paycharge(CHARGE_ID);
@@ -67,7 +66,6 @@ describe('Treasury', async function () {
   describe('Simple Transfer', async function () {
     let SIMPLETRANSFER;
     beforeEach(async function () {
-      await treasury.connect(dev).grantRole(TREASURIER_ROLE, alice.address);
       await treasury.feed({ value: AMOUNT });
       SIMPLETRANSFER = await treasury.connect(alice).simpleTransfer(bob.address, AMOUNT);
     });

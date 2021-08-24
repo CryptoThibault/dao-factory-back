@@ -35,7 +35,7 @@ contract Management {
     }
 
     function employ(address account_, uint256 salary_) public returns (bool) {
-        require(_dao.hasRole(_dao.MANAGER_ROLE, msg.sender), "Management: only Manager Role can use this function");
+        require(_dao.hasRole(_dao.MANAGER_ROLE(), msg.sender), "Management: only Manager Role can use this function");
         require(account_ != msg.sender, "Management: cannot employ yourself");
         _counter++;
         _employeesId[account_] = _counter;
@@ -50,7 +50,7 @@ contract Management {
     }
 
     function fire(address account) public returns (bool) {
-        require(_dao.hasRole(_dao.MANAGER_ROLE, msg.sender), "Management: only Manager Role can use this function");
+        require(_dao.hasRole(_dao.MANAGER_ROLE(), msg.sender), "Management: only Manager Role can use this function");
         _employeesData[idOf(account)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
         _employeesId[account] = 0;
         emit Fired(idOf(account), account, block.timestamp);

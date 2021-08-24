@@ -21,7 +21,7 @@ describe('Governance', async function () {
     dao = await Dao.connect(dev).deploy(dev.address, TOKEN_NAME, TOKEN_SYMBOL);
     await dao.deployed();
     Governance = await ethers.getContractFactory('Governance');
-    governance = await Governance.connect(dev).deploy(dev.address, TOKEN_NAME, TOKEN_SYMBOL);
+    governance = await Governance.connect(dev).deploy(TOKEN_NAME, TOKEN_SYMBOL);
     await governance.deployed();
   });
   it('should create token with the good name', async function () {
@@ -32,22 +32,22 @@ describe('Governance', async function () {
   });
   describe('Token Mint', async function () {
     beforeEach(async function () {
-      await governance.connect(dev).grantRole(MINTER_ROLE, dev.address);
-      await governance.mint(alice.address, AMOUNT);
+      await dao.connect(dev).grantRole(MINTER_ROLE, dev.address);
+      await governance.connect(dev).mint(alice.address, AMOUNT);
     });
     it('should mint good amount for alice', async function () {
       expect(await governance.balanceOf(alice.address)).to.equal(AMOUNT);
     });
     it('should burn good amount for alice', async function () {
-      await governance.connect(dev).grantRole(BURNER_ROLE, dev.address);
+      await dao.connect(dev).grantRole(BURNER_ROLE, dev.address);
       await governance.connect(dev).burn(alice.address, AMOUNT);
       expect(await governance.balanceOf(alice.address)).to.equal(0);
     });
   });
   describe('Token Lock', async function () {
     beforeEach(async function () {
-      await governance.connect(dev).grantRole(MINTER_ROLE, dev.address);
-      await governance.mint(alice.address, AMOUNT);
+      await dao.connect(dev).grantRole(MINTER_ROLE, dev.address);
+      await governance.connect(dev).mint(alice.address, AMOUNT);
       await governance.connect(alice).approve(governance.address, LOCK_AMOUNT);
       await governance.lock(LOCK_AMOUNT);
     });
@@ -57,7 +57,7 @@ describe('Governance', async function () {
   });
   describe('Proposal', async function () {
     beforeEach(async function () {
-      await governance.connect(dev).grantRole(PROPOSER_ROLE, alice.address);
+      await dao.connect(dev).grantRole(PROPOSER_ROLE, alice.address);
       await governance.connect(alice).propose(PROPOSAL_DESCRIPTION, alice.address, MINTER_ROLE, true);
     });
     it('should create a proposal with good description', async function () {
@@ -75,9 +75,9 @@ describe('Governance', async function () {
   });
   describe('Vote', async function () {
     beforeEach(async function () {
-      await governance.connect(dev).grantRole(PROPOSER_ROLE, alice.address);
-      await governance.grantRole(MINTER_ROLE, dev.address);
-      await governance.mint(dev.address, AMOUNT);
+      await dao.connect(dev).grantRole(PROPOSER_ROLE, alice.address);
+      await dao.grantRole(MINTER_ROLE, dev.address);
+      await governance.connect(dev).mint(dev.address, AMOUNT);
       await governance.mint(alice.address, AMOUNT);
       await governance.mint(bob.address, AMOUNT);
       await governance.approve(governance.address, LOCK_AMOUNT);

@@ -46,13 +46,13 @@ contract Governance is ERC20 {
     }
 
     function mint(address to, uint256 amount) public returns (bool) {
-        require(_dao.hasRole(_dao.MINTER_ROLE, msg.sender), "Governance: only Minter Role can use this function");
+        require(_dao.hasRole(_dao.MINTER_ROLE(), msg.sender), "Governance: only Minter Role can use this function");
         _mint(to, amount);
         return true;
     }
 
     function burn(address from, uint256 amount) public returns (bool) {
-        require(_dao.hasRole(_dao.BURNER_ROLE, msg.sender), "Governance: only Burner Role can use this function");
+        require(_dao.hasRole(_dao.BURNER_ROLE(), msg.sender), "Governance: only Burner Role can use this function");
         _burn(from, amount);
         return true;
     }
@@ -78,7 +78,7 @@ contract Governance is ERC20 {
         bytes32 role_,
         bool grant_
     ) public returns (bool) {
-        require(_dao.hasRole(_dao.PROPOSER_ROLE, msg.sender), "Governance: only Proposer Role can use this function");
+        require(_dao.hasRole(_dao.PROPOSER_ROLE(), msg.sender), "Governance: only Proposer Role can use this function");
         require(grant_ ? !_dao.hasRole(role_, account_) : _dao.hasRole(role_, account_));
         _counter++;
         _proposals[_counter] = Proposal({

@@ -19,10 +19,10 @@ describe('Management', async function () {
     Management = await ethers.getContractFactory('Management');
     management = await Management.connect(dev).deploy();
     await management.deployed();
+    await dao.connect(dev).grantRole(MANAGER_ROLE, alice.address);
   });
   describe('Employ', async function () {
     beforeEach(async function () {
-      await management.connect(dev).grantRole(MANAGER_ROLE, alice.address);
       await management.connect(alice).employ(bob.address, SALARY);
     });
     it('should employ bob with the good id', async function () {
@@ -46,7 +46,6 @@ describe('Management', async function () {
   describe('Payout', async function () {
     beforeEach(async function () {
       await management.connect(dev).feed({ value: AMOUNT });
-      await management.grantRole(MANAGER_ROLE, alice.address);
       await management.connect(alice).employ(bob.address, SALARY);
       await management.connect(bob).payout();
     });

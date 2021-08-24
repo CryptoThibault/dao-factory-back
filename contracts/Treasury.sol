@@ -35,7 +35,10 @@ contract Treasury {
     }
 
     function simpleTransfer(address receiver_, uint256 amount_) public returns (bool) {
-        require(_dao.hasRole(_dao.TREASURIER_ROLE, msg.sender), "Treasury: only Treasurier Role can use this function");
+        require(
+            _dao.hasRole(_dao.TREASURIER_ROLE(), msg.sender),
+            "Treasury: only Treasurier Role can use this function"
+        );
         payable(receiver_).sendValue(amount_);
         emit Sended(receiver_, amount_, block.timestamp);
         return true;
@@ -46,7 +49,10 @@ contract Treasury {
         address receiver_,
         uint256 amount_
     ) public returns (bool) {
-        require(_dao.hasRole(_dao.TREASURIER_ROLE, msg.sender), "Treasury: only Treasurier Role can use this function");
+        require(
+            _dao.hasRole(_dao.TREASURIER_ROLE(), msg.sender),
+            "Treasury: only Treasurier Role can use this function"
+        );
         _counter++;
         _charges[_counter] = Charge({
             name: name_,
@@ -61,14 +67,20 @@ contract Treasury {
     }
 
     function cancelCharge(uint256 id) public returns (bool) {
-        require(_dao.hasRole(_dao.TREASURIER_ROLE, msg.sender), "Treasury: only Treasurier Role can use this function");
+        require(
+            _dao.hasRole(_dao.TREASURIER_ROLE(), msg.sender),
+            "Treasury: only Treasurier Role can use this function"
+        );
         _charges[id].active = false;
         emit Canceled(id, nameOf(id), receiverOf(id), amountOf(id), block.timestamp);
         return true;
     }
 
     function payCharge(uint256 id) public returns (bool) {
-        require(_dao.hasRole(_dao.TREASURIER_ROLE, msg.sender), "Treasury: only Treasurier Role can use this function");
+        require(
+            _dao.hasRole(_dao.TREASURIER_ROLE(), msg.sender),
+            "Treasury: only Treasurier Role can use this function"
+        );
         require(activeOf(id));
         _charges[id].counter++;
         payable(receiverOf(id)).sendValue(amountOf(id));
@@ -77,7 +89,7 @@ contract Treasury {
     }
 
     function withdraw(uint256 amount) public returns (bool) {
-        require(_dao.hasRole(_dao.ADMIN_ROLE, msg.sender), "Treasury: only Admin Role can use this function");
+        require(_dao.hasRole(_dao.ADMIN_ROLE(), msg.sender), "Treasury: only Admin Role can use this function");
         require(totalTreasury() >= amount, "Treasury: cannot withdraw more than total treasury");
         payable(msg.sender).sendValue(amount);
         emit Withdrew(msg.sender, amount, block.timestamp);
@@ -85,7 +97,7 @@ contract Treasury {
     }
 
     function withdrawAll() public returns (bool) {
-        require(_dao.hasRole(_dao.ADMIN_ROLE, msg.sender), "Treasury: only Admin Role can use this function");
+        require(_dao.hasRole(_dao.ADMIN_ROLE(), msg.sender), "Treasury: only Admin Role can use this function");
         uint256 amount = totalTreasury();
         payable(msg.sender).sendValue(amount);
         emit Withdrew(msg.sender, amount, block.timestamp);
