@@ -28,12 +28,12 @@ contract Governance is ERC20 {
         Status status;
     }
 
-    event Locked(address account, uint256 amount, uint256 timestamp);
-    event Unlocked(address receiver, uint256 amount, uint256 timestamp);
-    event Proposed(address sender, string description, uint256 timestamp);
-    event Voted(address sender, uint256 power, uint256 timestamp);
-    event Approved(uint256 id, uint256 nbYes, uint256 timestamp);
-    event Rejected(uint256 id, uint256 nbNo, uint256 timestamp);
+    event Locked(address account, uint256 amount);
+    event Unlocked(address receiver, uint256 amount);
+    event Proposed(address sender, string description, address account, bytes32 role, bool grant);
+    event Voted(address sender, uint256 power);
+    event Approved(uint256 id, uint256 nbYes);
+    event Rejected(uint256 id, uint256 nbNo);
 
     Dao private _dao;
     mapping(address => uint256) private _lockBalances;
@@ -60,7 +60,7 @@ contract Governance is ERC20 {
     function lock(uint256 amount) public returns (bool) {
         transferFrom(msg.sender, address(this), amount);
         _lockBalances[msg.sender] += amount;
-        emit Locked(msg.sender, amount, block.timestamp);
+        emit Locked(msg.sender, amount);
         return true;
     }
 
@@ -68,7 +68,7 @@ contract Governance is ERC20 {
         require(amount <= _lockBalances[msg.sender]);
         _lockBalances[msg.sender] -= amount;
         transfer(msg.sender, amount);
-        emit Unlocked(msg.sender, amount, block.timestamp);
+        emit Unlocked(msg.sender, amount);
         return true;
     }
 
@@ -92,7 +92,7 @@ contract Governance is ERC20 {
             createdAt: block.timestamp,
             status: Status.Running
         });
-        emit Proposed(msg.sender, description_, block.timestamp);
+        emit Proposed(msg.sender, description_, account_, role_, grant_);
         return true;
     }
 
@@ -105,7 +105,7 @@ contract Governance is ERC20 {
         } else if (choice == Choice.No) {
             _proposals[id].nbNo += votingPower(msg.sender);
         }
-        emit Voted(msg.sender, votingPower(msg.sender), block.timestamp);
+        emit Voted(msg.sender, votingPower(msg.sender));
         if (nbYesOf(id) >= totalLock() / 2) {
             if (grantOf(id)) {
                 _dao.grantRole(roleOf(id), accountOf(id));
@@ -113,10 +113,10 @@ contract Governance is ERC20 {
                 _dao.revokeRole(roleOf(id), accountOf(id));
             }
             _proposals[id].status = Status.Approved;
-            emit Approved(id, nbYesOf(id), block.timestamp);
+            emit Approved(id, nbYesOf(id));
         } else if (nbNoOf(id) >= totalLock() / 2) {
             _proposals[id].status = Status.Rejected;
-            emit Rejected(id, nbNoOf(id), block.timestamp);
+            emit Rejected(id, nbNoOf(id));
         }
         return true;
     }

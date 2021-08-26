@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
 describe('DaoFactory', async function () {
-  let DaoFactory, daoFactory, dev, alice;
+  let DaoFactory, daoFactory, dev, alice, CREATE;
   const NAME = 'Business 1';
   const URL = 'https://www.business1';
   const TOKEN_NAME = `${NAME} Token`;
@@ -14,7 +14,7 @@ describe('DaoFactory', async function () {
     DaoFactory = await ethers.getContractFactory('DaoFactory');
     daoFactory = await DaoFactory.connect(dev).deploy();
     await daoFactory.deployed();
-    await daoFactory.connect(alice).create(NAME, URL, TOKEN_NAME, TOKEN_SYMBOL);
+    CREATE = await daoFactory.connect(alice).create(NAME, URL, TOKEN_NAME, TOKEN_SYMBOL);
   });
 
   it('should create a Business with good name', async function () {
@@ -34,5 +34,9 @@ describe('DaoFactory', async function () {
   });
   it('should increase counter', async function () {
     expect(await daoFactory.lastId()).to.equal(ID);
+  });
+  it('should emits event Created', async function () {
+    expect(CREATE).to.emit(daoFactory, 'Created')
+      .withArgs(ID, NAME, URL, alice.address, await daoFactory.creationOf(ID), await daoFactory.daoAddressOf(ID));
   });
 });

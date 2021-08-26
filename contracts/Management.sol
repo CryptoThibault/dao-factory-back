@@ -15,11 +15,12 @@ contract Management {
         uint256 lastPayout;
     }
 
-    event Received(address sender, uint256 amount, uint256 timestamp);
-    event Employed(uint256 id, address account, uint256 salary, uint256 timestamp);
-    event Fired(uint256 id, address account, uint256 timestamp);
-    event Resigned(uint256 id, address account, uint256 timestamp);
-    event Payed(address account, uint256 amount, uint256 time, uint256 timestamp);
+    event Received(address sender, uint256 amount);
+    event Withdrew(address receiver, uint256 amount);
+    event Employed(uint256 id, address account, uint256 salary);
+    event Fired(uint256 id, address account);
+    event Resigned(uint256 id, address account);
+    event Payed(address account, uint256 amount, uint256 nbPayout, uint256 timestamp);
 
     Dao private _dao;
     mapping(address => uint256) private _employeesId;
@@ -31,7 +32,7 @@ contract Management {
     }
 
     function feed() public payable {
-        emit Received(msg.sender, msg.value, block.timestamp);
+        emit Received(msg.sender, msg.value);
     }
 
     function employ(address account_, uint256 salary_) public returns (bool) {
@@ -45,7 +46,7 @@ contract Management {
             employedAt: block.timestamp,
             lastPayout: 0
         });
-        emit Employed(_counter, account_, salary_, block.timestamp);
+        emit Employed(_counter, account_, salary_);
         return true;
     }
 
@@ -53,14 +54,14 @@ contract Management {
         require(_dao.hasRole(_dao.MANAGER_ROLE(), msg.sender), "Management: only Manager Role can use this function");
         _employeesData[idOf(account)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
         _employeesId[account] = 0;
-        emit Fired(idOf(account), account, block.timestamp);
+        emit Fired(idOf(account), account);
         return true;
     }
 
     function resign() public returns (bool) {
         _employeesData[idOf(msg.sender)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
         _employeesId[msg.sender] = 0;
-        emit Resigned(idOf(msg.sender), msg.sender, block.timestamp);
+        emit Resigned(idOf(msg.sender), msg.sender);
     }
 
     function payout() public returns (bool) {
@@ -75,18 +76,18 @@ contract Management {
     }
 
     function withdraw(uint256 amount) public returns (bool) {
-        require(_dao.hasRole(_dao.ADMIN_ROLE(), msg.sender), "Treasury: only Admin Role can use this function");
-        require(totalTreasury() >= amount, "Treasury: cannot withdraw more than total treasury");
+        require(_dao.hasRole(_dao.ADMIN_ROLE(), msg.sender), "Management: only Admin Role can use this function");
+        require(address(this).balance >= amount, "Management: cannot withdraw more than total treasury");
         payable(msg.sender).sendValue(amount);
-        emit Withdrew(msg.sender, amount, block.timestamp);
+        emit Withdrew(msg.sender, amount);
         return true;
     }
 
     function withdrawAll() public returns (bool) {
-        require(_dao.hasRole(_dao.ADMIN_ROLE(), msg.sender), "Treasury: only Admin Role can use this function");
-        uint256 amount = totalTreasury();
+        require(_dao.hasRole(_dao.ADMIN_ROLE(), msg.sender), "Management: only Admin Role can use this function");
+        uint256 amount = address(this).balance;
         payable(msg.sender).sendValue(amount);
-        emit Withdrew(msg.sender, amount, block.timestamp);
+        emit Withdrew(msg.sender, amount);
         return true;
     }
 

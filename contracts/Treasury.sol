@@ -16,11 +16,11 @@ contract Treasury {
         uint256 counter;
     }
 
-    event Created(uint256 id, string name, address receiver, uint256 amount, uint256 timestamp);
-    event Canceled(uint256 id, string name, address receiver, uint256 amount, uint256 timestamp);
-    event Received(address sender, uint256 amount, uint256 timestamp);
-    event Withdrew(address reiceiver, uint256 amount, uint256 timestamp);
-    event Sended(address receiver, uint256 amount, uint256 timestamp);
+    event Created(uint256 id, string name, address receiver, uint256 amount);
+    event Canceled(uint256 id, string name, address receiver, uint256 amount);
+    event Received(address sender, uint256 amount);
+    event Withdrew(address reiceiver, uint256 amount);
+    event Sended(address receiver, uint256 amount);
 
     Dao private _dao;
     mapping(uint256 => Charge) private _charges;
@@ -31,7 +31,7 @@ contract Treasury {
     }
 
     function feed() public payable {
-        emit Received(msg.sender, msg.value, block.timestamp);
+        emit Received(msg.sender, msg.value);
     }
 
     function simpleTransfer(address receiver_, uint256 amount_) public returns (bool) {
@@ -40,7 +40,7 @@ contract Treasury {
             "Treasury: only Treasurier Role can use this function"
         );
         payable(receiver_).sendValue(amount_);
-        emit Sended(receiver_, amount_, block.timestamp);
+        emit Sended(receiver_, amount_);
         return true;
     }
 
@@ -62,7 +62,7 @@ contract Treasury {
             active: true,
             counter: 0
         });
-        emit Created(_counter, name_, receiver_, amount_, block.timestamp);
+        emit Created(_counter, name_, receiver_, amount_);
         return true;
     }
 
@@ -72,7 +72,7 @@ contract Treasury {
             "Treasury: only Treasurier Role can use this function"
         );
         _charges[id].active = false;
-        emit Canceled(id, nameOf(id), receiverOf(id), amountOf(id), block.timestamp);
+        emit Canceled(id, nameOf(id), receiverOf(id), amountOf(id));
         return true;
     }
 
@@ -81,10 +81,10 @@ contract Treasury {
             _dao.hasRole(_dao.TREASURIER_ROLE(), msg.sender),
             "Treasury: only Treasurier Role can use this function"
         );
-        require(activeOf(id));
+        require(activeOf(id), "Treasury: this charge are not active anymore");
         _charges[id].counter++;
         payable(receiverOf(id)).sendValue(amountOf(id));
-        emit Sended(receiverOf(id), amountOf(id), block.timestamp);
+        emit Sended(receiverOf(id), amountOf(id));
         return true;
     }
 
@@ -92,7 +92,7 @@ contract Treasury {
         require(_dao.hasRole(_dao.ADMIN_ROLE(), msg.sender), "Treasury: only Admin Role can use this function");
         require(totalTreasury() >= amount, "Treasury: cannot withdraw more than total treasury");
         payable(msg.sender).sendValue(amount);
-        emit Withdrew(msg.sender, amount, block.timestamp);
+        emit Withdrew(msg.sender, amount);
         return true;
     }
 
@@ -100,7 +100,7 @@ contract Treasury {
         require(_dao.hasRole(_dao.ADMIN_ROLE(), msg.sender), "Treasury: only Admin Role can use this function");
         uint256 amount = totalTreasury();
         payable(msg.sender).sendValue(amount);
-        emit Withdrew(msg.sender, amount, block.timestamp);
+        emit Withdrew(msg.sender, amount);
         return true;
     }
 
