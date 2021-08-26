@@ -74,6 +74,22 @@ contract Management {
         return true;
     }
 
+    function withdraw(uint256 amount) public returns (bool) {
+        require(_dao.hasRole(_dao.ADMIN_ROLE(), msg.sender), "Treasury: only Admin Role can use this function");
+        require(totalTreasury() >= amount, "Treasury: cannot withdraw more than total treasury");
+        payable(msg.sender).sendValue(amount);
+        emit Withdrew(msg.sender, amount, block.timestamp);
+        return true;
+    }
+
+    function withdrawAll() public returns (bool) {
+        require(_dao.hasRole(_dao.ADMIN_ROLE(), msg.sender), "Treasury: only Admin Role can use this function");
+        uint256 amount = totalTreasury();
+        payable(msg.sender).sendValue(amount);
+        emit Withdrew(msg.sender, amount, block.timestamp);
+        return true;
+    }
+
     function idOf(address account) public view returns (uint256) {
         require(_employeesId[account] != 0, "Management: this account is not employeed here");
         return _employeesId[account];
