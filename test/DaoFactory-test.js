@@ -1,10 +1,8 @@
-/* eslint-disable no-unused-vars */
-
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
 describe('DaoFactory', async function () {
-  let DaoFactory, daoFactory, dev, alice, bob;
+  let DaoFactory, daoFactory, dev, alice;
   const NAME = 'Business 1';
   const URL = 'https://www.business1';
   const TOKEN_NAME = `${NAME} Token`;
@@ -12,7 +10,7 @@ describe('DaoFactory', async function () {
   const ID = 1;
 
   beforeEach(async function () {
-    [dev, alice, bob] = await ethers.getSigners();
+    [dev, alice] = await ethers.getSigners();
     DaoFactory = await ethers.getContractFactory('DaoFactory');
     daoFactory = await DaoFactory.connect(dev).deploy();
     await daoFactory.deployed();

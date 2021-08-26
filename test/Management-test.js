@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
@@ -44,10 +42,14 @@ describe('Management', async function () {
     });
   });
   describe('Payout', async function () {
+    let PAYOUT;
     beforeEach(async function () {
       await management.connect(dev).feed({ value: AMOUNT });
       await management.connect(alice).employ(bob.address, SALARY);
-      await management.connect(bob).payout();
+      PAYOUT = await management.connect(bob).payout();
+    });
+    it('should change ether balance', async function () {
+      expect(PAYOUT).to.changeEtherBalances([management, bob], [SALARY.mul(-1), SALARY]);
     });
   });
 });

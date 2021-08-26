@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
@@ -101,7 +99,7 @@ describe('Governance', async function () {
       expect(await governance.statusOf(PROPOSAL_ID)).to.equal(1);
     });
     it('should grant Minter role to alice', async function () {
-      expect(await governance.hasRole(MINTER_ROLE, alice.address)).to.equal(true);
+      expect(await dao.hasRole(MINTER_ROLE, alice.address)).to.equal(true);
     });
   });
 });
