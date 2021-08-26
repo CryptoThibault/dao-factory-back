@@ -1,20 +1,20 @@
-## Dao Factory by Crypto Thibault
+# Dao Factory by Crypto Thibault
 
 Contracts Language: Solidity v0.8.6;
 Test and Scripts Environnement: Hardhat v2.5.0;
 
-# Dependencies:
+### Dependencies:
 
 - @openzeppelin/contracts
 - hardhat-docgen
 - dotenv
 
-# Test library
+### Test library
 
 - Chai
 - Ethers Js
 
-# Protocol Stucture
+### Protocol Stucture
 
 ```
 DaoFactory
