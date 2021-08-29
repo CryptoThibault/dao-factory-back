@@ -131,4 +131,8 @@ contract Treasury {
     function counterOf(uint256 id) public view returns (uint256) {
         return _charges[id].counter;
     }
+
+    function nbCharge() public view returns (uint256) {
+        return _counter;
+    }
 }
