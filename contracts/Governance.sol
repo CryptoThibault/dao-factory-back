@@ -168,4 +168,8 @@ contract Governance is ERC20 {
     function totalLock() public view returns (uint256) {
         return balanceOf(address(this));
     }
+
+    function nbProposal() public view returns (uint256) {
+        return _counter;
+    }
 }

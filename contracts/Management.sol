@@ -62,6 +62,7 @@ contract Management {
         _employeesData[idOf(msg.sender)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
         _employeesId[msg.sender] = 0;
         emit Resigned(idOf(msg.sender), msg.sender);
+        return true;
     }
 
     function payout() public returns (bool) {
