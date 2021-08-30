@@ -5,6 +5,8 @@ pragma solidity ^0.8.7;
 import "./Dao.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
+/// @dev Governance contract is used to vote role changes proposals by using your Governance Token
+/// This contract inherit from ERC20 contract by OpenZeppelin
 contract Governance is ERC20 {
     enum Choice {
         Yes,
@@ -41,22 +43,34 @@ contract Governance is ERC20 {
     mapping(uint256 => Proposal) private _proposals;
     uint256 private _counter;
 
+    /// @dev importing back Dao contract with msg.sender as deployer of this contract
+    /// Function interact with AccessControl of Dao contract
+    /// @param name name of Governance Token
+    /// @param symbol symbol of Governance Token
     constructor(string memory name, string memory symbol) ERC20(name, symbol) {
         _dao = Dao(msg.sender);
     }
 
+    /// @dev dev Mint new tokens for a specific user
+    /// @param to account who will receive tokens
+    /// @param amount numbers of tokens who will be minted
     function mint(address to, uint256 amount) public returns (bool) {
         require(_dao.hasRole(_dao.MINTER_ROLE(), msg.sender), "Governance: only Minter Role can use this function");
         _mint(to, amount);
         return true;
     }
 
+    /// @dev dev Burn tokens for a specific user
+    /// @param from account who will loose tokens
+    /// @param amount numbers of tokens who will be burned
     function burn(address from, uint256 amount) public returns (bool) {
         require(_dao.hasRole(_dao.BURNER_ROLE(), msg.sender), "Governance: only Burner Role can use this function");
         _burn(from, amount);
         return true;
     }
 
+    ///@dev lock tokens for increase votingPower
+    ///@param amount to lock (1 Token == 1 votingPower)
     function lock(uint256 amount) public returns (bool) {
         transferFrom(msg.sender, address(this), amount);
         _lockBalances[msg.sender] += amount;
@@ -64,6 +78,8 @@ contract Governance is ERC20 {
         return true;
     }
 
+    /// @dev unlock tokens but decrease votingPower
+    ///@param amount to unlock (1Token == 1 votingPower)
     function unlock(uint256 amount) public returns (bool) {
         require(amount <= _lockBalances[msg.sender]);
         _lockBalances[msg.sender] -= amount;
@@ -72,6 +88,11 @@ contract Governance is ERC20 {
         return true;
     }
 
+    /// @dev create a new proposal of grant or revoke a role in this dao
+    /// @param description_ justify the current proposal
+    /// @param account_ who will get the new role
+    /// @param role_ given to the designed account
+    /// @param grant_ boolean for choosing if user want grant or revoke a role
     function propose(
         string memory description_,
         address account_,
@@ -96,6 +117,11 @@ contract Governance is ERC20 {
         return true;
     }
 
+    /// @dev vote Yes or No to a specific proposal
+    /// If the amount of Yes is superior to half of all the votingPower, the proposition will be approved.
+    /// And same for amount of No, the proposition will be rejected.
+    /// @param id of the proposal to vote on
+    /// @param choice 0 Accept or 1 Reject (Yes or No)
     function vote(uint256 id, Choice choice) public returns (bool) {
         require(votingPower(msg.sender) >= 1);
         require(voteUsedOf(msg.sender, id) < votingPower(msg.sender));
@@ -121,54 +147,79 @@ contract Governance is ERC20 {
         return true;
     }
 
+    /// @param id of a proposal
+    /// @return description of this proposal
     function descriptionOf(uint256 id) public view returns (string memory) {
         return _proposals[id].description;
     }
 
+    /// @param id of a proposal
+    /// @return account concerning by this proposal
     function accountOf(uint256 id) public view returns (address) {
         return _proposals[id].account;
     }
 
+    /// @param id of a proposal
+    /// @return role proposed for the account of this proposal
     function roleOf(uint256 id) public view returns (bytes32) {
         return _proposals[id].role;
     }
 
+    /// @param id of a proposal
+    /// @return grant or revoke a role with this proposal
     function grantOf(uint256 id) public view returns (bool) {
         return _proposals[id].grant;
     }
 
+    /// @param id of a proposal
+    /// @return author of this proposal
     function authorOf(uint256 id) public view returns (address) {
         return _proposals[id].author;
     }
 
+    /// @param id of a proposal
+    /// @return number of Yes by votingPower for this proposal
     function nbYesOf(uint256 id) public view returns (uint256) {
         return _proposals[id].nbYes;
     }
 
+    /// @param id of a proposal
+    /// @return number of No by votingPower for this proposal
     function nbNoOf(uint256 id) public view returns (uint256) {
         return _proposals[id].nbNo;
     }
 
+    /// @param id of a proposal
+    /// @return creation timestamp of this proposal
     function creationOf(uint256 id) public view returns (uint256) {
         return _proposals[id].createdAt;
     }
 
+    /// @param id of a proposal
+    /// @return status Running, Approved or Reject for this proposal
     function statusOf(uint256 id) public view returns (Status) {
         return _proposals[id].status;
     }
 
+    /// @param account address of a user
+    /// @return votingPower of this user
     function votingPower(address account) public view returns (uint256) {
         return _lockBalances[account];
     }
 
+    /// @param account address of a user
+    /// @param id of a proposal
+    /// @return vote used by a user for this proposal
     function voteUsedOf(address account, uint256 id) public view returns (uint256) {
         return _voteUsed[account][id];
     }
 
+    /// @return total of locked tokens on this contract
     function totalLock() public view returns (uint256) {
         return balanceOf(address(this));
     }
 
+    /// @return id of the last proposal
     function nbProposal() public view returns (uint256) {
         return _counter;
     }
