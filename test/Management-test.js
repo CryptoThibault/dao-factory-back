@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
 describe('Management', async function () {
-  let Dao, dao, Management, management, dev, alice, bob;
+  let Dao, dao, managementAddress, management, dev, alice, bob;
   const TOKEN_NAME = 'Business 1 Token';
   const TOKEN_SYMBOL = 'BS1';
   const MANAGER_ROLE = ethers.utils.id('MANAGER_ROLE');
@@ -14,9 +14,11 @@ describe('Management', async function () {
     Dao = await ethers.getContractFactory('Dao');
     dao = await Dao.connect(dev).deploy(dev.address, TOKEN_NAME, TOKEN_SYMBOL);
     await dao.deployed();
-    Management = await ethers.getContractFactory('Management');
-    management = await Management.connect(dev).deploy();
-    await management.deployed();
+    managementAddress = dao.managementAddress();
+    management = await ethers.getContractAt('Management', managementAddress);
+    // Management = await ethers.getContractFactory('Management');
+    // management = await Management.connect(dev).deploy();
+    // await management.deployed();
     await dao.connect(dev).grantRole(MANAGER_ROLE, alice.address);
   });
   describe('Employ', async function () {

@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
 describe('Treasury', async function () {
-  let Dao, dao, Treasury, treasury, dev, alice, bob;
+  let Dao, dao, treasuryAddress, treasury, dev, alice, bob;
   const TOKEN_NAME = 'Business 1 Token';
   const TOKEN_SYMBOL = 'BS1';
   const TREASURIER_ROLE = ethers.utils.id('TREASURIER_ROLE');
@@ -14,9 +14,11 @@ describe('Treasury', async function () {
     Dao = await ethers.getContractFactory('Dao');
     dao = await Dao.connect(dev).deploy(dev.address, TOKEN_NAME, TOKEN_SYMBOL);
     await dao.deployed();
-    Treasury = await ethers.getContractFactory('Treasury');
-    treasury = await Treasury.connect(dev).deploy();
-    await treasury.deployed();
+    treasuryAddress = dao.treasuryAddress();
+    treasury = await ethers.getContractAt('Treasury', treasuryAddress);
+    // Treasury = await ethers.getContractFactory('Treasury');
+    // treasury = await Treasury.connect(dev).deploy();
+    // await treasury.deployed();
     await dao.connect(dev).grantRole(TREASURIER_ROLE, alice.address);
   });
   it('should feed the contract with the good amount', async function () {

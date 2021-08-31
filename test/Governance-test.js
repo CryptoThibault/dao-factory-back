@@ -2,7 +2,7 @@ const { expect } = require('chai');
 const { ethers } = require('hardhat');
 
 describe('Governance', async function () {
-  let Dao, dao, Governance, governance, dev, alice, bob;
+  let Dao, dao, governanceAddress, governance, dev, alice, bob;
   const TOKEN_NAME = 'Business 1 Token';
   const TOKEN_SYMBOL = 'BS1';
   const AMOUNT = ethers.utils.parseEther('20');
@@ -18,9 +18,11 @@ describe('Governance', async function () {
     Dao = await ethers.getContractFactory('Dao');
     dao = await Dao.connect(dev).deploy(dev.address, TOKEN_NAME, TOKEN_SYMBOL);
     await dao.deployed();
-    Governance = await ethers.getContractFactory('Governance');
-    governance = await Governance.connect(dev).deploy(TOKEN_NAME, TOKEN_SYMBOL);
-    await governance.deployed();
+    governanceAddress = await dao.governanceAddress();
+    governance = await ethers.getContractAt('Governance', governanceAddress);
+    // Governance = await ethers.getContractFactory('Governance');
+    // governance = await Governance.connect(dev).deploy(TOKEN_NAME, TOKEN_SYMBOL);
+    // await governance.deployed();
   });
   it('should create token with the good name', async function () {
     expect(await governance.name()).to.equal(TOKEN_NAME);
