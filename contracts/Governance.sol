@@ -5,7 +5,7 @@ pragma solidity ^0.8.7;
 import "./Dao.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-/// @dev Governance contract is used to vote role changes proposals by using your Governance Token
+/// @dev Governance contract is used to vote role changes proposals by using your Governance Token in a specific Dao
 /// This contract inherit from ERC20 contract by OpenZeppelin
 contract Governance is ERC20 {
     enum Choice {
