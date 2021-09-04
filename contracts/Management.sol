@@ -105,6 +105,10 @@ contract Management {
         return true;
     }
 
+    function accountAt(uint256 id) public view returns (address) {
+        return _employeesData[id].account;
+    }
+
     /// @param account that we want his id
     /// @return id of this account
     function idOf(address account) public view returns (uint256) {
@@ -128,5 +132,9 @@ contract Management {
     /// @return last payout timestamp of this account
     function lastPayoutOf(address account) public view returns (uint256) {
         return _employeesData[idOf(account)].lastPayout;
+    }
+
+    function nbEmployee() public view returns (uint256) {
+        return _counter;
     }
 }
