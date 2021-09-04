@@ -14,12 +14,16 @@ describe('Management', async function () {
     Dao = await ethers.getContractFactory('Dao');
     dao = await Dao.connect(dev).deploy(dev.address, TOKEN_NAME, TOKEN_SYMBOL);
     await dao.deployed();
-    managementAddress = dao.managementAddress();
+    managementAddress = await dao.managementAddress();
     management = await ethers.getContractAt('Management', managementAddress);
     // Management = await ethers.getContractFactory('Management');
     // management = await Management.connect(dev).deploy();
     // await management.deployed();
     await dao.connect(dev).grantRole(MANAGER_ROLE, alice.address);
+  });
+  it('should feed the contract with the good amount', async function () {
+    expect(await management.connect(dev).feed({ value: AMOUNT }))
+      .to.changeEtherBalances([dev, management], [AMOUNT.mul(-1), AMOUNT]);
   });
   describe('Employ', async function () {
     beforeEach(async function () {
@@ -36,11 +40,11 @@ describe('Management', async function () {
     });
     it('should fire bob and revert when ask data', async function () {
       await management.connect(alice).fire(bob.address);
-      await expect(management.idOf(bob.address)).to.be.revertedWith('Management: this account is not employeed here');
+      await expect(management.idOf(bob.address)).to.revertedWith('Management: this account is not employeed here');
     });
-    it('should fire bob and revert when ask data', async function () {
+    it('should resign bob and revert when ask data', async function () {
       await management.connect(bob).resign();
-      await expect(management.idOf(bob.address)).to.be.revertedWith('Management: this account is not employeed here');
+      await expect(management.idOf(bob.address)).to.revertedWith('Management: this account is not employeed here');
     });
   });
   describe('Payout', async function () {

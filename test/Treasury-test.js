@@ -14,7 +14,7 @@ describe('Treasury', async function () {
     Dao = await ethers.getContractFactory('Dao');
     dao = await Dao.connect(dev).deploy(dev.address, TOKEN_NAME, TOKEN_SYMBOL);
     await dao.deployed();
-    treasuryAddress = dao.treasuryAddress();
+    treasuryAddress = await dao.treasuryAddress();
     treasury = await ethers.getContractAt('Treasury', treasuryAddress);
     // Treasury = await ethers.getContractFactory('Treasury');
     // treasury = await Treasury.connect(dev).deploy();
@@ -47,10 +47,10 @@ describe('Treasury', async function () {
     beforeEach(async function () {
       await treasury.connect(alice).addCharge(CHARGE_NAME, bob.address, AMOUNT);
       await treasury.connect(dev).feed({ value: AMOUNT });
-      PAYCHARGE = await treasury.connect(alice).paycharge(CHARGE_ID);
+      PAYCHARGE = await treasury.connect(alice).payCharge(CHARGE_ID);
     });
     it('should pay the charge to bob', async function () {
-      expect(PAYCHARGE).to.changeEtherBalances([treasury, bob], [-AMOUNT, AMOUNT]);
+      expect(PAYCHARGE).to.changeEtherBalances([treasury, bob], [AMOUNT.mul(-1), AMOUNT]);
     });
     it('should decrease total treasury', async function () {
       expect(await treasury.totalTreasury()).to.equal(0);
@@ -70,7 +70,7 @@ describe('Treasury', async function () {
       SIMPLETRANSFER = await treasury.connect(alice).simpleTransfer(bob.address, AMOUNT);
     });
     it('should transfer the good amount to bob', async function () {
-      expect(SIMPLETRANSFER).to.changeEtherBalances([treasury, bob], [-AMOUNT, AMOUNT]);
+      expect(SIMPLETRANSFER).to.changeEtherBalances([treasury, bob], [AMOUNT.mul(-1), AMOUNT]);
     });
   });
 });
