@@ -105,6 +105,8 @@ contract Management {
         return true;
     }
 
+    /// @param id of the employee
+    /// @return account of the employee
     function accountAt(uint256 id) public view returns (address) {
         return _employeesData[id].account;
     }
@@ -134,6 +136,7 @@ contract Management {
         return _employeesData[idOf(account)].lastPayout;
     }
 
+    /// @return id of the last employees with counter
     function nbEmployee() public view returns (uint256) {
         return _counter;
     }
