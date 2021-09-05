@@ -13,7 +13,7 @@ contract Management {
         address account;
         uint256 salary;
         uint256 employedAt;
-        uint256 lastPayout;
+        uint256 nextPayout;
     }
 
     event Received(address sender, uint256 amount);
@@ -50,7 +50,7 @@ contract Management {
             account: account_,
             salary: salary_,
             employedAt: block.timestamp,
-            lastPayout: 0
+            nextPayout: block.timestamp + INTERVAL
         });
         emit Employed(_counter, account_, salary_);
         return true;
@@ -60,7 +60,7 @@ contract Management {
     /// @param account who will loose his salary
     function fire(address account) public returns (bool) {
         require(_dao.hasRole(_dao.MANAGER_ROLE(), msg.sender), "Management: only Manager Role can use this function");
-        _employeesData[idOf(account)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
+        _employeesData[idOf(account)] = Employee({account: address(0), salary: 0, employedAt: 0, nextPayout: 0});
         _employeesId[account] = 0;
         emit Fired(idOf(account), account);
         return true;
@@ -68,7 +68,7 @@ contract Management {
 
     /// @dev a user can resign from his job
     function resign() public returns (bool) {
-        _employeesData[idOf(msg.sender)] = Employee({account: address(0), salary: 0, employedAt: 0, lastPayout: 0});
+        _employeesData[idOf(msg.sender)] = Employee({account: address(0), salary: 0, employedAt: 0, nextPayout: 0});
         _employeesId[msg.sender] = 0;
         emit Resigned(idOf(msg.sender), msg.sender);
         return true;
@@ -76,13 +76,15 @@ contract Management {
 
     /// @dev employed user can use this function to receive there current salary
     function payout() public returns (bool) {
-        require(lastPayoutOf(msg.sender) < block.timestamp);
-        uint256 timestamp = block.timestamp;
-        uint256 nbPayout = timestamp - lastPayoutOf(msg.sender) / INTERVAL;
+        require(nextPayoutOf(msg.sender) <= block.timestamp, "Management: employee have to wait his next payout");
+        uint256 nbPayout = 0;
+        for (uint256 i = nextPayoutOf(msg.sender); i < block.timestamp; i += INTERVAL) {
+            nbPayout++;
+        }
         uint256 amount = salaryOf(msg.sender) * nbPayout;
-        _employeesData[idOf(msg.sender)].lastPayout = timestamp;
+        _employeesData[idOf(msg.sender)].nextPayout = block.timestamp + INTERVAL;
         payable(msg.sender).sendValue(amount);
-        emit Payed(msg.sender, amount, nbPayout, timestamp);
+        emit Payed(msg.sender, amount, nbPayout, block.timestamp);
         return true;
     }
 
@@ -130,10 +132,10 @@ contract Management {
         return _employeesData[idOf(account)].employedAt;
     }
 
-    /// @param account that we want his last payout timestamp
-    /// @return last payout timestamp of this account
-    function lastPayoutOf(address account) public view returns (uint256) {
-        return _employeesData[idOf(account)].lastPayout;
+    /// @param account that we want his next payout timestamp
+    /// @return next payout timestamp of this account
+    function nextPayoutOf(address account) public view returns (uint256) {
+        return _employeesData[idOf(account)].nextPayout;
     }
 
     /// @return id of the last employees with counter
