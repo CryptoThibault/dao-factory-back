@@ -78,11 +78,13 @@ contract Management {
     function payout() public returns (bool) {
         require(nextPayoutOf(msg.sender) <= block.timestamp, "Management: employee have to wait his next payout");
         uint256 nbPayout = 0;
+        uint256 nextPayout;
         for (uint256 i = nextPayoutOf(msg.sender); i < block.timestamp; i += INTERVAL) {
             nbPayout++;
+            nextPayout = i;
         }
         uint256 amount = salaryOf(msg.sender) * nbPayout;
-        _employeesData[idOf(msg.sender)].nextPayout = block.timestamp + INTERVAL;
+        _employeesData[idOf(msg.sender)].nextPayout = nextPayout;
         payable(msg.sender).sendValue(amount);
         emit Payed(msg.sender, amount, nbPayout, block.timestamp);
         return true;
