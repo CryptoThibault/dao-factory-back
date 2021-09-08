@@ -21,7 +21,7 @@ describe('Dao', async function () {
   it('should create a new Management contract address', async function () {
     expect(await dao.managementAddress()).to.not.equal(ethers.constants.AddressZero);
   });
-  it('should asign dev as default admin', async function () {
-    expect(await dao.hasRole(DEFAULT_ADMIN_ROLE, dev.address)).to.equal(true);
+  it('should asign alice as default admin', async function () {
+    expect(await dao.hasRole(DEFAULT_ADMIN_ROLE, alice.address)).to.equal(true);
   });
 });
