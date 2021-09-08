@@ -50,11 +50,17 @@ describe('Management', async function () {
       await management.connect(dev).feed({ value: AMOUNT });
       await management.connect(alice).employ(bob.address, SALARY);
     });
-    it('should change ether balance', async function () {
+    it('should change ether balance with salary', async function () {
       await ethers.provider.send('evm_increaseTime', [TIME]);
       await ethers.provider.send('evm_mine');
       expect(await management.connect(bob).payout())
         .to.changeEtherBalances([management, bob], [SALARY.mul(-1), SALARY]);
+    });
+    it('should change ether balance with two salary', async function () {
+      await ethers.provider.send('evm_increaseTime', [TIME * 2]);
+      await ethers.provider.send('evm_mine');
+      expect(await management.connect(bob).payout())
+        .to.changeEtherBalances([management, bob], [SALARY.mul(-2), SALARY.mul(2)]);
     });
     it('should revert if time is not reach', async function () {
       await expect(management.connect(bob).payout())
