@@ -16,9 +16,6 @@ describe('Treasury', async function () {
     await dao.deployed();
     treasuryAddress = await dao.treasuryAddress();
     treasury = await ethers.getContractAt('Treasury', treasuryAddress);
-    // Treasury = await ethers.getContractFactory('Treasury');
-    // treasury = await Treasury.connect(dev).deploy();
-    // await treasury.deployed();
     await dao.connect(dev).grantRole(TREASURIER_ROLE, alice.address);
   });
   it('should feed the contract with the good amount', async function () {

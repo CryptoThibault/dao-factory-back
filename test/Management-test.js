@@ -9,6 +9,7 @@ describe('Management', async function () {
   const EMPLOYEE_ID = 1;
   const SALARY = ethers.utils.parseEther('0.01');
   const AMOUNT = ethers.utils.parseEther('0.1');
+  const TIME = 3600 * 24 * 7;
   beforeEach(async function () {
     [dev, alice, bob] = await ethers.getSigners();
     Dao = await ethers.getContractFactory('Dao');
@@ -16,9 +17,6 @@ describe('Management', async function () {
     await dao.deployed();
     managementAddress = await dao.managementAddress();
     management = await ethers.getContractAt('Management', managementAddress);
-    // Management = await ethers.getContractFactory('Management');
-    // management = await Management.connect(dev).deploy();
-    // await management.deployed();
     await dao.connect(dev).grantRole(MANAGER_ROLE, alice.address);
   });
   it('should feed the contract with the good amount', async function () {
@@ -48,14 +46,19 @@ describe('Management', async function () {
     });
   });
   describe('Payout', async function () {
-    let PAYOUT;
     beforeEach(async function () {
       await management.connect(dev).feed({ value: AMOUNT });
       await management.connect(alice).employ(bob.address, SALARY);
-      PAYOUT = await management.connect(bob).payout();
     });
     it('should change ether balance', async function () {
-      expect(PAYOUT).to.changeEtherBalances([management, bob], [SALARY.mul(-1), SALARY]);
+      await ethers.provider.send('evm_increaseTime', [TIME]);
+      await ethers.provider.send('evm_mine');
+      expect(await management.connect(bob).payout())
+        .to.changeEtherBalances([management, bob], [SALARY.mul(-1), SALARY]);
+    });
+    it('should revert if time is not reach', async function () {
+      await expect(management.connect(bob).payout())
+        .to.revertedWith('Management: employee have to wait his next payout');
     });
   });
 });

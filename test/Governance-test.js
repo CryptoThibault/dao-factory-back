@@ -20,9 +20,6 @@ describe('Governance', async function () {
     await dao.deployed();
     governanceAddress = await dao.governanceAddress();
     governance = await ethers.getContractAt('Governance', governanceAddress);
-    // Governance = await ethers.getContractFactory('Governance');
-    // governance = await Governance.connect(dev).deploy(TOKEN_NAME, TOKEN_SYMBOL);
-    // await governance.deployed();
   });
   it('should create token with the good name', async function () {
     expect(await governance.name()).to.equal(TOKEN_NAME);
