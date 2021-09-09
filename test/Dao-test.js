@@ -5,7 +5,7 @@ describe('Dao', async function () {
   let Dao, dao, dev, alice;
   const TOKEN_NAME = 'Business 1 Token';
   const TOKEN_SYMBOL = 'BS1';
-  const DEFAULT_ADMIN_ROLE = ethers.utils.id('DEFAULT_ADMIN_ROLE');
+  const DEFAULT_ADMIN_ROLE = ethers.constants.HashZero;
   const ADMIN_ROLE = ethers.utils.id('ADMIN_ROLE');
   beforeEach(async function () {
     [dev, alice] = await ethers.getSigners();

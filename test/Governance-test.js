@@ -46,23 +46,24 @@ describe('Governance', async function () {
     beforeEach(async function () {
       await dao.connect(dev).grantRole(MINTER_ROLE, dev.address);
       await governance.connect(dev).mint(alice.address, AMOUNT);
-      await governance.connect(alice).approve(governance.address, LOCK_AMOUNT);
-      LOCK = await governance.lock(LOCK_AMOUNT);
+      LOCK = await governance.connect(alice).lock(LOCK_AMOUNT);
     });
     it('should decrease alice token balance', async function () {
-      expect(await governance.balanceOf(alice.address)).to.equal(LOCK_AMOUNT);
+      expect(await governance.balanceOf(alice.address)).to.equal(AMOUNT.sub(LOCK_AMOUNT));
     });
     it('should lock the good amount for alice', async function () {
       expect(await governance.votingPowerOf(alice.address)).to.equal(LOCK_AMOUNT);
     });
     it('should tranfer tokens from alice to governement contract', async function () {
-      expect(LOCK).to.changeTokenBalances(governance, [alice, governance], [LOCK_AMOUNT.mul(-1), LOCK_AMOUNT]);
+      await expect(() => governance.connect(alice).lock(LOCK_AMOUNT))
+        .to.changeTokenBalances(governance, [alice, governance], [LOCK_AMOUNT.mul(-1), LOCK_AMOUNT]);
     });
     it('should emits event Locked', async function () {
       expect(LOCK).to.emit(governance, 'Locked').withArgs(alice.address, LOCK_AMOUNT);
     });
     it('should unlock alice tokens', async function () {
-      await governance.connect(alice).unlock(LOCK_AMOUNT);
+      await expect(() => governance.connect(alice).unlock(LOCK_AMOUNT))
+        .to.changeTokenBalances(governance, [governance, alice], [LOCK_AMOUNT.mul(-1), LOCK_AMOUNT]);
       expect(await governance.votingPowerOf(alice.address)).to.equal(0);
     });
   });
@@ -93,20 +94,17 @@ describe('Governance', async function () {
     let VOTE_START, VOTE_END;
     beforeEach(async function () {
       await dao.connect(dev).grantRole(PROPOSER_ROLE, alice.address);
-      await dao.grantRole(MINTER_ROLE, dev.address);
+      await dao.connect(dev).grantRole(MINTER_ROLE, dev.address);
       await governance.connect(dev).mint(dev.address, AMOUNT);
-      await governance.mint(alice.address, AMOUNT);
-      await governance.mint(bob.address, AMOUNT);
-      await governance.approve(governance.address, LOCK_AMOUNT);
-      await governance.lock(LOCK_AMOUNT);
+      await governance.connect(dev).mint(alice.address, AMOUNT);
+      await governance.connect(dev).mint(bob.address, AMOUNT);
       await governance.connect(alice).propose(PROPOSAL_DESCRIPTION, alice.address, MINTER_ROLE, true);
-      await governance.approve(governance.address, LOCK_AMOUNT);
-      await governance.lock(LOCK_AMOUNT);
-      await governance.connect(bob).approve(governance.address, LOCK_AMOUNT);
-      await governance.lock(LOCK_AMOUNT);
+      await governance.connect(dev).lock(LOCK_AMOUNT);
+      await governance.connect(alice).lock(LOCK_AMOUNT);
+      await governance.connect(bob).lock(LOCK_AMOUNT);
       VOTE_START = await governance.connect(dev).vote(PROPOSAL_ID, 0);
-      await governance.connect(alice).vote(PROPOSAL_ID, 0);
-      VOTE_END = await governance.connect(bob).vote(PROPOSAL_ID, 1);
+      await governance.connect(alice).vote(PROPOSAL_ID, 1);
+      VOTE_END = await governance.connect(bob).vote(PROPOSAL_ID, 0);
     });
     it('should read the good number of Yes', async function () {
       expect(await governance.nbYesOf(PROPOSAL_ID)).to.equal(LOCK_AMOUNT.mul(2));
