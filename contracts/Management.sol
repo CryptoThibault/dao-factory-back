@@ -59,18 +59,20 @@ contract Management {
     /// @dev manager can unemploy a curent employee
     /// @param account who will loose his salary
     function fire(address account) public returns (bool) {
+        uint256 id = idOf(account);
         require(_dao.hasRole(_dao.MANAGER_ROLE(), msg.sender), "Management: only Manager Role can use this function");
-        _employeesData[idOf(account)] = Employee({account: address(0), salary: 0, employedAt: 0, nextPayout: 0});
+        _employeesData[id] = Employee({account: address(0), salary: 0, employedAt: 0, nextPayout: 0});
         _employeesId[account] = 0;
-        emit Fired(idOf(account), account);
+        emit Fired(id, account);
         return true;
     }
 
     /// @dev a user can resign from his job
     function resign() public returns (bool) {
-        _employeesData[idOf(msg.sender)] = Employee({account: address(0), salary: 0, employedAt: 0, nextPayout: 0});
+        uint256 id = idOf(msg.sender);
+        _employeesData[id] = Employee({account: address(0), salary: 0, employedAt: 0, nextPayout: 0});
         _employeesId[msg.sender] = 0;
-        emit Resigned(idOf(msg.sender), msg.sender);
+        emit Resigned(id, msg.sender);
         return true;
     }
 
