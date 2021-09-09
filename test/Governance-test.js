@@ -7,6 +7,7 @@ describe('Governance', async function () {
   const TOKEN_SYMBOL = 'BS1';
   const AMOUNT = ethers.utils.parseEther('20');
   const LOCK_AMOUNT = ethers.utils.parseEther('10');
+  const DEFAULT_ADMIN_ROLE = ethers.constants.HashZero;
   const MINTER_ROLE = ethers.utils.id('MINTER_ROLE');
   const BURNER_ROLE = ethers.utils.id('BURNER_ROLE');
   const PROPOSER_ROLE = ethers.utils.id('PROPOSER_ROLE');
@@ -93,8 +94,9 @@ describe('Governance', async function () {
   describe('Vote', async function () {
     let VOTE_START, VOTE_END;
     beforeEach(async function () {
-      await dao.connect(dev).grantRole(PROPOSER_ROLE, alice.address);
+      await dao.connect(dev).grantRole(DEFAULT_ADMIN_ROLE, governance.address);
       await dao.connect(dev).grantRole(MINTER_ROLE, dev.address);
+      await dao.connect(dev).grantRole(PROPOSER_ROLE, alice.address);
       await governance.connect(dev).mint(dev.address, AMOUNT);
       await governance.connect(dev).mint(alice.address, AMOUNT);
       await governance.connect(dev).mint(bob.address, AMOUNT);
@@ -123,6 +125,9 @@ describe('Governance', async function () {
     });
     it('should emits event Approved', async function () {
       expect(VOTE_END).to.emit(governance, 'Approved').withArgs(PROPOSAL_ID, LOCK_AMOUNT.mul(2));
+    });
+    it('should increase vote used for user', async function () {
+      expect(await governance.voteUsedOf(alice.address, PROPOSAL_ID)).to.equal(LOCK_AMOUNT);
     });
   });
 });
