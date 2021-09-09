@@ -69,21 +69,22 @@ contract Governance is ERC20 {
         return true;
     }
 
-    ///@dev lock tokens for increase votingPower
-    ///@param amount to lock (1 Token == 1 votingPower)
+    ///@dev lock tokens for increase votingPowerOf
+    ///@param amount to lock (1 Token == 1 votingPowerOf)
     function lock(uint256 amount) public returns (bool) {
-        transferFrom(msg.sender, address(this), amount);
+        transfer(address(this), amount);
         _lockBalances[msg.sender] += amount;
         emit Locked(msg.sender, amount);
         return true;
     }
 
-    /// @dev unlock tokens but decrease votingPower
-    ///@param amount to unlock (1Token == 1 votingPower)
+    /// @dev unlock tokens but decrease votingPowerOf
+    ///@param amount to unlock (1Token == 1 votingPowerOf)
     function unlock(uint256 amount) public returns (bool) {
         require(amount <= _lockBalances[msg.sender]);
         _lockBalances[msg.sender] -= amount;
-        transfer(msg.sender, amount);
+        _approve(address(this), msg.sender, amount);
+        transferFrom(address(this), msg.sender, amount);
         emit Unlocked(msg.sender, amount);
         return true;
     }
@@ -123,15 +124,15 @@ contract Governance is ERC20 {
     /// @param id of the proposal to vote on
     /// @param choice 0 Accept or 1 Reject (Yes or No)
     function vote(uint256 id, Choice choice) public returns (bool) {
-        require(votingPower(msg.sender) >= 1);
-        require(voteUsedOf(msg.sender, id) < votingPower(msg.sender));
-        _voteUsed[msg.sender][id] += votingPower(msg.sender);
+        require(votingPowerOf(msg.sender) >= 1);
+        require(voteUsedOf(msg.sender, id) < votingPowerOf(msg.sender));
+        _voteUsed[msg.sender][id] += votingPowerOf(msg.sender);
         if (choice == Choice.Yes) {
-            _proposals[id].nbYes += votingPower(msg.sender);
+            _proposals[id].nbYes += votingPowerOf(msg.sender);
         } else if (choice == Choice.No) {
-            _proposals[id].nbNo += votingPower(msg.sender);
+            _proposals[id].nbNo += votingPowerOf(msg.sender);
         }
-        emit Voted(msg.sender, votingPower(msg.sender));
+        emit Voted(msg.sender, votingPowerOf(msg.sender));
         if (nbYesOf(id) >= totalLock() / 2) {
             if (grantOf(id)) {
                 _dao.grantRole(roleOf(id), accountOf(id));
@@ -178,13 +179,13 @@ contract Governance is ERC20 {
     }
 
     /// @param id of a proposal
-    /// @return number of Yes by votingPower for this proposal
+    /// @return number of Yes by votingPowerOf for this proposal
     function nbYesOf(uint256 id) public view returns (uint256) {
         return _proposals[id].nbYes;
     }
 
     /// @param id of a proposal
-    /// @return number of No by votingPower for this proposal
+    /// @return number of No by votingPowerOf for this proposal
     function nbNoOf(uint256 id) public view returns (uint256) {
         return _proposals[id].nbNo;
     }
@@ -202,8 +203,8 @@ contract Governance is ERC20 {
     }
 
     /// @param account address of a user
-    /// @return votingPower of this user
-    function votingPower(address account) public view returns (uint256) {
+    /// @return votingPowerOf of this user
+    function votingPowerOf(address account) public view returns (uint256) {
         return _lockBalances[account];
     }
 
