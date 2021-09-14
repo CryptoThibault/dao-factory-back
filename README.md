@@ -1,8 +1,8 @@
 # Dao Factory by Crypto Thibault
 
-- [Link to Dapp](https://dao-factory-dapp.netlify.app/)
-- [Link to Front](https://github.com/CryptoThibault/dao-factory-front)
-- [Contract DaoFactory](https://etherscan.io/address/0x7995999f5B63cFcf061EA472755C0ed7A9E9289C)
+[Link to Dapp](https://dao-factory-dapp.netlify.app/)
+[Link to Front](https://github.com/CryptoThibault/dao-factory-front)
+[Contract DaoFactory](https://etherscan.io/address/0x7995999f5B63cFcf061EA472755C0ed7A9E9289C)
 
 - Contracts Language: Solidity v0.8.6
 - Test and Scripts Environnement: Hardhat v2.5.0
